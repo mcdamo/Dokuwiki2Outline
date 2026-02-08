@@ -47,6 +47,8 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         self.assertEqual('[Example](https://example.com)\n', self.dtm._dokuwiki_to_markdown('[[https://example.com|Example]]', None, None))
         self.assertEqual('[https://example.com](https://example.com)\n', self.dtm._dokuwiki_to_markdown('[[https://example.com]]', None, None))
         self.assertEqual('[https://example.com//two//slashes](https://example.com//two//slashes)\n', self.dtm._dokuwiki_to_markdown('[[https://example.com//two//slashes]]', None, None))
+        # newline in link title
+        self.assertEqual('[Example title](https://example.com)\n', self.dtm._dokuwiki_to_markdown('[[https://example.com|\nExample\ntitle\n]]', None, None))
 
     def test_headers(self):
         self.assertEqual('# Headline L1\n\n', self.dtm._tr_headers('====== Headline L1 ======\n'))

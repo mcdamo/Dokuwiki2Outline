@@ -88,10 +88,13 @@ class DokuWiki2MarkDown:
     @staticmethod
     def _tr_links_initial_escape(text: str) -> str:
         def replace_link(match):
-            url, _, title = match.groups()
+            url = match.group('url')
+            title = match.group('title')
             if not title:
                 title = url
-            
+
+            title = re.sub(r'\n', ' ', title.strip())
+
             # hack to avoid italic, bold, underline getting crushed
             url = re.sub(r'/', "##URL#ESCAPED#SLASH##", url)
             url = re.sub(r'\*', "##URL#ESCAPED#ASTERISK##", url)
@@ -102,7 +105,7 @@ class DokuWiki2MarkDown:
             title = re.sub(r'_', "##URL#ESCAPED#UNDERSCORE##", title)
             
             return f'[{title}]({url})'
-        return re.sub(r'\[\[(.*?)(\|(.*?))?\]\]', replace_link, text)
+        return re.sub(r'\[\[(?P<url>[^|]*?)(\|(?P<title>.*?))?\]\]', replace_link, text, flags=re.DOTALL)
 
     @staticmethod
     def _tr_links_unescape(text: str) -> str:
