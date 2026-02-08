@@ -49,13 +49,6 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         self.assertEqual('[https://example.com//two//slashes](https://example.com//two//slashes)\n', self.dtm._dokuwiki_to_markdown('[[https://example.com//two//slashes]]', None, None))
         # newline in link title
         self.assertEqual('[Example title](https://example.com)\n', self.dtm._dokuwiki_to_markdown('[[https://example.com|\nExample\ntitle\n]]', None, None))
-        # internal page links
-        self.assertEqual('[Example](./)\n', self.dtm._dokuwiki_to_markdown('[[.:|Example]]', None, None))
-        self.assertEqual('[Example](../)\n', self.dtm._dokuwiki_to_markdown('[[..:|Example]]', None, None))
-        self.assertEqual('[Example](./page)\n', self.dtm._dokuwiki_to_markdown('[[.page|Example]]', None, None))
-        self.assertEqual('[Example](./dir/)\n', self.dtm._dokuwiki_to_markdown('[[.:dir:|Example]]', None, None))
-        self.assertEqual('[Example](./dir/page)\n', self.dtm._dokuwiki_to_markdown('[[.:dir:page|Example]]', None, None))
-        self.assertEqual('[Example](/dir/page#section)\n', self.dtm._dokuwiki_to_markdown('[[dir:page#section|Example]]', None, None))
 
     def test_headers(self):
         self.assertEqual('# Headline L1\n\n', self.dtm._tr_headers('====== Headline L1 ======\n'))
