@@ -4,9 +4,11 @@ import argparse
 import os
 import re
 from functools import reduce
-
+import uuid
 
 class DokuWiki2MarkDown:
+
+    codeblks = []
 
     @staticmethod
     def convert_file(filepath, lang, ts, codeblk_filename):
@@ -37,10 +39,11 @@ class DokuWiki2MarkDown:
     @staticmethod
     def _dokuwiki_to_markdown(dokuwiki_text, codeblk_lang, timestamps, codeblk_filename=False):
 
+        DokuWiki2MarkDown.codeblks = []
         # Remove timestamps if elected
         if not timestamps:
             dokuwiki_text = DokuWiki2MarkDown._rm_timestamp(dokuwiki_text)
-        dokuwiki_text = DokuWiki2MarkDown._tr_codeblocks(dokuwiki_text, codeblk_lang, codeblk_filename)
+        dokuwiki_text = DokuWiki2MarkDown._extract_codeblocks(dokuwiki_text, codeblk_lang, codeblk_filename)
 
         # Transform the rest ()
         # - bold and block quotes share the same syntax in DokuWiki and MarkDown
@@ -58,10 +61,14 @@ class DokuWiki2MarkDown:
             DokuWiki2MarkDown._tr_linebreaks,
             DokuWiki2MarkDown._tr_links_unescape,
             DokuWiki2MarkDown._rm_single_space_at_line_end,
-            DokuWiki2MarkDown._rm_newlines,
             DokuWiki2MarkDown._rm_nowiki,
-            ]
+            DokuWiki2MarkDown._rm_newlines,
+        ]
         dokuwiki_text = reduce(lambda text, func: func(text), transforms, dokuwiki_text)
+
+        for (unique_id, codeblk) in DokuWiki2MarkDown.codeblks:
+            dokuwiki_text = dokuwiki_text.replace(unique_id, codeblk)
+
         return dokuwiki_text
 
     @staticmethod
@@ -123,16 +130,31 @@ class DokuWiki2MarkDown:
         return text
 
     @staticmethod
-    def _tr_codeblocks(text: str, lang, codeblk_filename=False) -> str:
+    def _extract_codeblocks(text: str, lang, codeblk_filename=False) -> str:
+        def replace_block(match):
+            unique_id = '[' + str(uuid.uuid4()) + ']'
+            listitem = match.group('listitem')
+            listitem = '' if listitem is None else listitem
+            indent = ' ' * (len(listitem) - 2) # adjust for markdown indentation
+            ret = DokuWiki2MarkDown._tr_codeblocks(match.group('block'), lang, codeblk_filename, indent)
+            DokuWiki2MarkDown.codeblks.append((unique_id, ret))
+            return f'{listitem}{unique_id}\n'
+
+        return re.sub(r'(?P<listitem> +[*-] +)?(?P<block><(?:code|file)[^>]*>\n{0,}(.*?)\n{0,}</(?:code|file)>)', replace_block, text, flags=re.DOTALL)
+
+    @staticmethod
+    def _tr_codeblocks(text: str, lang, codeblk_filename=False, indent='') -> str:
         def replace_block(match):
             lang_type = '' if match.group('lang') is None else match.group('lang')
             lang_type = lang_type if lang is None else lang
-            ret = f'\n\n```{lang_type}\n{match.group('content')}\n```\n'
+            content = match.group('content')
+            content = re.sub(r'^', indent, content, flags=re.MULTILINE)
+            ret = f'```{lang_type}\n{content}\n{indent}```'
             if codeblk_filename and match.group('filename'):
-                ret = f'\n\n`{match.group('filename')}`{ret}'
+                ret = f'`{match.group('filename')}`\n\n{ret}'
             return ret
 
-        return re.sub(r'\n*<(?:code|file)(\s+(?P<lang>[^> ]+))?(\s+(?P<filename>[^> ]+))?[^>]*>\n{0,}(?P<content>.*?)\n{0,}</(?:code|file)>', replace_block, text, flags=re.DOTALL)
+        return re.sub(r'<(?:code|file)(\s+(?P<lang>[^> ]+))?(\s+(?P<filename>[^> ]+))?[^>]*>\n{0,}(?P<content>.*?)\n{0,}</(?:code|file)>', replace_block, text, flags=re.DOTALL)
 
     @staticmethod
     def _tr_images(text: str) -> str:
@@ -168,7 +190,7 @@ class DokuWiki2MarkDown:
 
     @staticmethod
     def _tr_tables(input_dokuwiki):
-        lines = input_dokuwiki.strip().split('\n')  # Splitting the DokuWiki text into lines
+        lines = input_dokuwiki.split('\n')  # Splitting the DokuWiki text into lines
         in_table = False  # Flag to indicate whether we are currently processing a table
         output_markdown = []  # List to store the converted Markdown lines
         added_separator = False  # Flag to indicate whether the separator line has been added
@@ -209,14 +231,17 @@ class DokuWiki2MarkDown:
                     in_table = False
                 output_markdown.append(line)
 
+        # no empty line found after the table, so add one:
+        if (in_table):
+            output_markdown.append('')
         # Join the Markdown lines into a single string and return
         text = '\n'.join(output_markdown)
-        return text + '\n'
+        return text
 
     @staticmethod
     def _rm_newlines(text: str) -> str:
         """Remove any excessive (2+) newlines and replace with 2 \n"""
-        return re.sub(r'(\n\s*){2,}', r'\n\n', text)
+        return re.sub(r'(\n\s*){2,}', r'\n\n', text, flags=re.MULTILINE)
 
     @staticmethod
     def _rm_nowiki(text: str) -> str:

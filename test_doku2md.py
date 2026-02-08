@@ -44,11 +44,11 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         self.assertEqual('~~strikethrough text~~ \n', self.dtm._tr_strikethrough('<del>strikethrough text</del> \n'))
 
     def test_links(self):
-        self.assertEqual('[Example](https://example.com)\n', self.dtm._dokuwiki_to_markdown('[[https://example.com|Example]]', None, None))
-        self.assertEqual('[https://example.com](https://example.com)\n', self.dtm._dokuwiki_to_markdown('[[https://example.com]]', None, None))
-        self.assertEqual('[https://example.com//two//slashes](https://example.com//two//slashes)\n', self.dtm._dokuwiki_to_markdown('[[https://example.com//two//slashes]]', None, None))
+        self.assertEqual('[Example](https://example.com)', self.dtm._dokuwiki_to_markdown('[[https://example.com|Example]]', None, None))
+        self.assertEqual('[https://example.com](https://example.com)', self.dtm._dokuwiki_to_markdown('[[https://example.com]]', None, None))
+        self.assertEqual('[https://example.com//two//slashes](https://example.com//two//slashes)', self.dtm._dokuwiki_to_markdown('[[https://example.com//two//slashes]]', None, None))
         # newline in link title
-        self.assertEqual('[Example title](https://example.com)\n', self.dtm._dokuwiki_to_markdown('[[https://example.com|\nExample\ntitle\n]]', None, None))
+        self.assertEqual('[Example title](https://example.com)', self.dtm._dokuwiki_to_markdown('[[https://example.com|\nExample\ntitle\n]]', None, None))
 
     def test_headers(self):
         self.assertEqual('# Headline L1\n\n', self.dtm._tr_headers('====== Headline L1 ======\n'))
@@ -62,33 +62,38 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         self.assertEqual('= Not A Headline =\n', self.dtm._tr_headers('= Not A Headline =\n'))
 
     def test_code_blocks(self):
-        self.assertEqual('\n\n```\ncode text\n```\n', self.dtm._tr_codeblocks('<code>\ncode text\n</code>', None))
-        self.assertEqual('\n\n```\ncode text\n```\n', self.dtm._tr_codeblocks('<file>\ncode text\n</file>', None))
-        self.assertEqual('\n\n```\ncode text\n```\n', self.dtm._tr_codeblocks('<file>code text</file>', None))
-        self.assertEqual('\n\n```\ncode text\n```\n', self.dtm._tr_codeblocks('<file>\ncode text</file>', None))
-        self.assertEqual('\n\n```\ncode text\n```\n', self.dtm._tr_codeblocks('<file>code text\n</file>', None))
-        self.assertEqual('\n\n```\ncode text\n```\n', self.dtm._tr_codeblocks('\n<file>code text\n</file>', None))
+        self.assertEqual('```\ncode text\n```', self.dtm._tr_codeblocks('<code>\ncode text\n</code>', None))
+        self.assertEqual('```\ncode text\n```', self.dtm._tr_codeblocks('<file>\ncode text\n</file>', None))
+        self.assertEqual('```\ncode text\n```', self.dtm._tr_codeblocks('<file>code text</file>', None))
+        self.assertEqual('```\ncode text\n```', self.dtm._tr_codeblocks('<file>\ncode text</file>', None))
+        self.assertEqual('```\ncode text\n```', self.dtm._tr_codeblocks('<file>code text\n</file>', None))
+        self.assertEqual('\n```\ncode text\n```', self.dtm._tr_codeblocks('\n<file>code text\n</file>', None))
         # with lang argument
-        self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<code>\ncode text\n</code>', 'shell'))
-        self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file>\ncode text\n</file>', 'shell'))
-        self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file>code text</file>', 'shell'))
-        self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file>\ncode text</file>', 'shell'))
-        self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file>code text\n</file>', 'shell'))
-        self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('\n<file>code text\n</file>', 'shell'))
+        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<code>\ncode text\n</code>', 'shell'))
+        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<file>\ncode text\n</file>', 'shell'))
+        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<file>code text</file>', 'shell'))
+        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<file>\ncode text</file>', 'shell'))
+        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<file>code text\n</file>', 'shell'))
+        self.assertEqual('\n```shell\ncode text\n```', self.dtm._tr_codeblocks('\n<file>code text\n</file>', 'shell'))
         # with provided lang
-        self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<code shell>\ncode text\n</code>', None))
-        self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell>\ncode text\n</file>', None))
-        self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell>code text</file>', None))
-        self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell>\ncode text</file>', None))
-        self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell>code text\n</file>', None))
-        self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('\n<file shell>code text\n</file>', None))
+        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<code shell>\ncode text\n</code>', None))
+        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<file shell>\ncode text\n</file>', None))
+        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<file shell>code text</file>', None))
+        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<file shell>\ncode text</file>', None))
+        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<file shell>code text\n</file>', None))
+        self.assertEqual('\n```shell\ncode text\n```', self.dtm._tr_codeblocks('\n<file shell>code text\n</file>', None))
         # with provided lang and filename
-        self.assertEqual('\n\n`file.txt`\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<code shell file.txt>\ncode text\n</code>', None, True))
-        self.assertEqual('\n\n`file.txt`\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell file.txt>\ncode text\n</file>', None, True))
-        self.assertEqual('\n\n`file.txt`\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell file.txt>code text</file>', None, True))
-        self.assertEqual('\n\n`file.txt`\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell file.txt>\ncode text</file>', None, True))
-        self.assertEqual('\n\n`file.txt`\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell file.txt>code text\n</file>', None, True))
-        self.assertEqual('\n\n`file.txt`\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('\n<file shell file.txt>code text\n</file>', None, True))
+        self.assertEqual('`file.txt`\n\n```shell\ncode text\n```', self.dtm._tr_codeblocks('<code shell file.txt>\ncode text\n</code>', None, True))
+        self.assertEqual('`file.txt`\n\n```shell\ncode text\n```', self.dtm._tr_codeblocks('<file shell file.txt>\ncode text\n</file>', None, True))
+        self.assertEqual('`file.txt`\n\n```shell\ncode text\n```', self.dtm._tr_codeblocks('<file shell file.txt>code text</file>', None, True))
+        self.assertEqual('`file.txt`\n\n```shell\ncode text\n```', self.dtm._tr_codeblocks('<file shell file.txt>\ncode text</file>', None, True))
+        self.assertEqual('`file.txt`\n\n```shell\ncode text\n```', self.dtm._tr_codeblocks('<file shell file.txt>code text\n</file>', None, True))
+        self.assertEqual('\n`file.txt`\n\n```shell\ncode text\n```', self.dtm._tr_codeblocks('\n<file shell file.txt>code text\n</file>', None, True))
+        # do not apply any conversions inside code blocks
+        self.assertEqual('```\n[[:not-a-link:]]\n//not-italic//\n```\n', self.dtm._dokuwiki_to_markdown('<code>[[:not-a-link:]]\n//not-italic//\n</code>', None, None))
+        # code blocks nested in lists should be indented to the same level
+        self.assertEqual('* ```\n  code\n  text\n  ```\n', self.dtm._dokuwiki_to_markdown('  * <code>code\ntext\n</code>', None, None))
+        self.assertEqual('  * ```\n    code\n    text\n    ```\n', self.dtm._dokuwiki_to_markdown('    * <code>code\ntext\n</code>', None, None))
 
 
     def test_images(self):
