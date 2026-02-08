@@ -93,7 +93,17 @@ class DokuWiki2MarkDown:
             if not title:
                 title = url
 
+            # strip newlines from title
             title = re.sub(r'\n', ' ', title.strip())
+
+            # check for internal links
+            if (not re.match(r'^[a-z]+://', url)):
+                # convert dokuwiki internal links to urls
+                url = re.sub(r':', '/', url)
+                # add slash between dots and page name
+                url = re.sub(r'^(\.+)([^./])', rf'\1/\2', url)
+                # add initial slash for absolute links
+                url = re.sub(r'^([^./])', rf'/\1', url)
 
             # hack to avoid italic, bold, underline getting crushed
             url = re.sub(r'/', "##URL#ESCAPED#SLASH##", url)
