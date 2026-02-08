@@ -58,7 +58,8 @@ class DokuWiki2MarkDown:
             DokuWiki2MarkDown._tr_linebreaks,
             DokuWiki2MarkDown._tr_links_unescape,
             DokuWiki2MarkDown._rm_single_space_at_line_end,
-            DokuWiki2MarkDown._rm_newlines
+            DokuWiki2MarkDown._rm_newlines,
+            DokuWiki2MarkDown._rm_nowiki,
             ]
         dokuwiki_text = reduce(lambda text, func: func(text), transforms, dokuwiki_text)
         return dokuwiki_text
@@ -206,6 +207,10 @@ class DokuWiki2MarkDown:
     def _rm_newlines(text: str) -> str:
         """Remove any excessive (2+) newlines and replace with 2 \n"""
         return re.sub(r'(\n\s*){2,}', r'\n\n', text)
+
+    @staticmethod
+    def _rm_nowiki(text: str) -> str:
+        return re.sub(r'<nowiki>(.*?)</nowiki>', r'\1', text)
 
     @staticmethod
     def _rm_single_space_at_line_end(text: str) -> str:

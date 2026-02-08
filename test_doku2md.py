@@ -127,6 +127,8 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         self.assertEqual('\nsometext\n\n', self.dtm._rm_newlines('\nsometext\n\n'))
         self.assertEqual('\nsometext\n\n', self.dtm._rm_newlines('\nsometext\n\n\n'))
 
+    def test_nowiki(self):
+        self.assertEqual('sometext', self.dtm._rm_nowiki('<nowiki>sometext</nowiki>'))
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
