@@ -66,13 +66,28 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         self.assertEqual('\n\n```\ncode text\n```\n', self.dtm._tr_codeblocks('<file>\ncode text</file>', None))
         self.assertEqual('\n\n```\ncode text\n```\n', self.dtm._tr_codeblocks('<file>code text\n</file>', None))
         self.assertEqual('\n\n```\ncode text\n```\n', self.dtm._tr_codeblocks('\n<file>code text\n</file>', None))
-        # with lang
+        # with lang argument
         self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<code>\ncode text\n</code>', 'shell'))
         self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file>\ncode text\n</file>', 'shell'))
         self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file>code text</file>', 'shell'))
         self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file>\ncode text</file>', 'shell'))
         self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file>code text\n</file>', 'shell'))
         self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('\n<file>code text\n</file>', 'shell'))
+        # with provided lang
+        self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<code shell>\ncode text\n</code>', None))
+        self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell>\ncode text\n</file>', None))
+        self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell>code text</file>', None))
+        self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell>\ncode text</file>', None))
+        self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell>code text\n</file>', None))
+        self.assertEqual('\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('\n<file shell>code text\n</file>', None))
+        # with provided lang and filename
+        self.assertEqual('\n\n`file.txt`\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<code shell file.txt>\ncode text\n</code>', None, True))
+        self.assertEqual('\n\n`file.txt`\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell file.txt>\ncode text\n</file>', None, True))
+        self.assertEqual('\n\n`file.txt`\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell file.txt>code text</file>', None, True))
+        self.assertEqual('\n\n`file.txt`\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell file.txt>\ncode text</file>', None, True))
+        self.assertEqual('\n\n`file.txt`\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell file.txt>code text\n</file>', None, True))
+        self.assertEqual('\n\n`file.txt`\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('\n<file shell file.txt>code text\n</file>', None, True))
+
 
     def test_images(self):
         self.assertEqual('![alt text](image.png)', self.dtm._tr_images('{{image.png|alt text}}'))

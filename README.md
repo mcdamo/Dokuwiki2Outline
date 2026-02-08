@@ -37,7 +37,7 @@ Best way to see what's supported and how is to look at [syntax.md](syntax.md), w
 
 1. Requires Python 3 (tested on Py 3.11 but it should work ok on older releases too)
 2. Obtain all `.txt` from your DokuWiki web directory (typically in `pages` subdir)
-3. Run `doku2md` to convert either one file or all TXT files in a directory structure 
+3. Run `doku2md` to convert either one file or all TXT files in a directory structure
 
 ```bash
 # Single file
@@ -62,16 +62,17 @@ options:
                         Directory of files to convert.
   -l LANG, --lang LANG  Codeblocks will be labeled with this Language (eg. shell).
   -T, --timestamps      Keep textual timestamps in documents. (Default is to remove timestamps)
+  -c, --codefile        Add code-block file name in code block header. (Default is to remove code-block file name)
 ```
 
 **--lang**
 
 Creates code blocks typed with a shell of your choice.
-Eg.  
+Eg.
 
 ````text
-```bash  
-cd /home  
+```bash
+cd /home
 ```
 ````
 

@@ -9,7 +9,7 @@ from functools import reduce
 class DokuWiki2MarkDown:
 
     @staticmethod
-    def convert_file(filepath, lang, ts):
+    def convert_file(filepath, lang, ts, codeblk_filename):
         try:
             with open(filepath, 'r') as f:
                 dokuwiki_text = f.read()
@@ -17,7 +17,7 @@ class DokuWiki2MarkDown:
             print(f"Error: File {filepath} not found.")
             return
 
-        markdown_text = DokuWiki2MarkDown._dokuwiki_to_markdown(dokuwiki_text, lang, ts)
+        markdown_text = DokuWiki2MarkDown._dokuwiki_to_markdown(dokuwiki_text, lang, ts, codeblk_filename)
 
         new_filepath = os.path.splitext(filepath)[0] + '.md'
         with open(new_filepath, 'w') as f:
@@ -25,22 +25,22 @@ class DokuWiki2MarkDown:
             f.write(markdown_text)
 
     @staticmethod
-    def convert_directory(directory, lang, ts):
+    def convert_directory(directory, lang, ts, codeblk_filename):
         try:
             for root, dirs, files in os.walk(directory):
                 for file in files:
                     if file.endswith('.txt'):
-                        DokuWiki2MarkDown.convert_file(os.path.join(root, file), lang, ts)
+                        DokuWiki2MarkDown.convert_file(os.path.join(root, file), lang, ts, codeblk_filename)
         except NotADirectoryError:
             print(f"Error: Directory {directory} not found.")
 
     @staticmethod
-    def _dokuwiki_to_markdown(dokuwiki_text, codeblk_lang, timestamps):
+    def _dokuwiki_to_markdown(dokuwiki_text, codeblk_lang, timestamps, codeblk_filename=False):
 
         # Remove timestamps if elected
         if not timestamps:
             dokuwiki_text = DokuWiki2MarkDown._rm_timestamp(dokuwiki_text)
-        dokuwiki_text = DokuWiki2MarkDown._tr_codeblocks(dokuwiki_text, codeblk_lang)
+        dokuwiki_text = DokuWiki2MarkDown._tr_codeblocks(dokuwiki_text, codeblk_lang, codeblk_filename)
 
         # Transform the rest ()
         # - bold and block quotes share the same syntax in DokuWiki and MarkDown
@@ -119,10 +119,16 @@ class DokuWiki2MarkDown:
         return text
 
     @staticmethod
-    def _tr_codeblocks(text: str, lang) -> str:
-        lang_type = '' if lang is None else lang
-        return re.sub(r'\n*<(?:code|file)[^>]*>\n{0,}(.*?)\n{0,}</(?:code|file)>',
-                      rf'\n\n```{lang_type}\n\1\n```\n', text, flags=re.DOTALL)
+    def _tr_codeblocks(text: str, lang, codeblk_filename=False) -> str:
+        def replace_block(match):
+            lang_type = '' if match.group('lang') is None else match.group('lang')
+            lang_type = lang_type if lang is None else lang
+            ret = f'\n\n```{lang_type}\n{match.group('content')}\n```\n'
+            if codeblk_filename and match.group('filename'):
+                ret = f'\n\n`{match.group('filename')}`{ret}'
+            return ret
+
+        return re.sub(r'\n*<(?:code|file)(\s+(?P<lang>[^> ]+))?(\s+(?P<filename>[^> ]+))?[^>]*>\n{0,}(?P<content>.*?)\n{0,}</(?:code|file)>', replace_block, text, flags=re.DOTALL)
 
     @staticmethod
     def _tr_images(text: str) -> str:
@@ -225,13 +231,15 @@ def main():
     parser.add_argument('-l', '--lang', help='Codeblocks will be labeled with this Language (eg. shell).')
     parser.add_argument('-T', '--timestamps', dest='timestamps', action='store_true',
                         help='Keep textual timestamps in documents. (Default is to remove timestamps)')
+    parser.add_argument('-c', '--codefile', dest='codefile', action='store_true',
+                        help='Add code-block file name in code block header. (Default is to remove code-block file name)')
 
     args = parser.parse_args()
     dw2md = DokuWiki2MarkDown()
     if args.file:
-        dw2md.convert_file(args.file, args.lang, args.timestamps)
+        dw2md.convert_file(args.file, args.lang, args.timestamps, args.codefile)
     elif args.directory:
-        dw2md.convert_directory(args.directory, args.lang, args.timestamps)
+        dw2md.convert_directory(args.directory, args.lang, args.timestamps, args.codefile)
 
 
 if __name__ == '__main__':
