@@ -60,6 +60,7 @@ class DokuWiki2MarkDown:
             DokuWiki2MarkDown._tr_footnotes,
             DokuWiki2MarkDown._tr_tables,
             DokuWiki2MarkDown._tr_lists,
+            DokuWiki2MarkDown._tr_backslashes,
             DokuWiki2MarkDown._tr_linebreaks,
             DokuWiki2MarkDown._tr_links_unescape,
             DokuWiki2MarkDown._rm_single_space_at_line_end,
@@ -169,6 +170,10 @@ class DokuWiki2MarkDown:
     @staticmethod
     def _tr_linebreaks(text: str) -> str:
         return re.sub(r' *\\{2} *\n', r'  \n', text)
+
+    @staticmethod
+    def _tr_backslashes(text: str) -> str:
+        return re.sub(r'\\', r'\\\\', text)
 
     @staticmethod
     def _tr_list_items(indentation, i, line):

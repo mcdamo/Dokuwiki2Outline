@@ -154,5 +154,8 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
     def test_nowiki(self):
         self.assertEqual('sometext', self.dtm._rm_nowiki('<nowiki>sometext</nowiki>'))
 
+    def test_backslashes(self):
+        self.assertEqual('\\\\', self.dtm._tr_backslashes('\\'))
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
