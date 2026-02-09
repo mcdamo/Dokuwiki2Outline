@@ -100,22 +100,24 @@ class DokuWiki2MarkDown:
         def replace_link(match):
             url = match.group('url')
             title = match.group('title')
-            if not title:
-                title = url
-
-            # strip newlines from title
-            title = re.sub(r'\n', ' ', title.strip())
 
             # hack to avoid italic, bold, underline getting crushed
             url = re.sub(r'/', "##URL#ESCAPED#SLASH##", url)
             url = re.sub(r'\*', "##URL#ESCAPED#ASTERISK##", url)
             url = re.sub(r'_', "##URL#ESCAPED#UNDERSCORE##", url)
 
-            title = re.sub(r'/', "##URL#ESCAPED#SLASH##", title)
-            title = re.sub(r'\*', "##URL#ESCAPED#ASTERISK##", title)
-            title = re.sub(r'_', "##URL#ESCAPED#UNDERSCORE##", title)
-            
-            return f'[{title}]({url})'
+            if title:
+                # strip newlines from title
+                title = re.sub(r'\n', ' ', title.strip())
+
+                title = re.sub(r'/', "##URL#ESCAPED#SLASH##", title)
+                title = re.sub(r'\*', "##URL#ESCAPED#ASTERISK##", title)
+                title = re.sub(r'_', "##URL#ESCAPED#UNDERSCORE##", title)
+
+                return f'[{title}]({url})'
+
+            return f'<{url}>'
+
         return re.sub(r'\[\[(?P<url>[^|]*?)(\|(?P<title>.*?))?\]\]', replace_link, text, flags=re.DOTALL)
 
     @staticmethod

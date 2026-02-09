@@ -45,8 +45,8 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
 
     def test_links(self):
         self.assertEqual('[Example](https://example.com)', self.dtm._dokuwiki_to_markdown('[[https://example.com|Example]]', None, None))
-        self.assertEqual('[https://example.com](https://example.com)', self.dtm._dokuwiki_to_markdown('[[https://example.com]]', None, None))
-        self.assertEqual('[https://example.com//two//slashes](https://example.com//two//slashes)', self.dtm._dokuwiki_to_markdown('[[https://example.com//two//slashes]]', None, None))
+        self.assertEqual('<https://example.com>', self.dtm._dokuwiki_to_markdown('[[https://example.com]]', None, None))
+        self.assertEqual('<https://example.com//two//slashes>', self.dtm._dokuwiki_to_markdown('[[https://example.com//two//slashes]]', None, None))
         # newline in link title
         self.assertEqual('[Example title](https://example.com)', self.dtm._dokuwiki_to_markdown('[[https://example.com|\nExample\ntitle\n]]', None, None))
 
