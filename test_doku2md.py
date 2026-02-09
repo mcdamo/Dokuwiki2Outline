@@ -44,11 +44,11 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         self.assertEqual('~~strikethrough text~~ \n', self.dtm._tr_strikethrough('<del>strikethrough text</del> \n'))
 
     def test_links(self):
-        self.assertEqual('[Example](https://example.com)', self.dtm._dokuwiki_to_markdown('[[https://example.com|Example]]', None, None))
-        self.assertEqual('<https://example.com>', self.dtm._dokuwiki_to_markdown('[[https://example.com]]', None, None))
-        self.assertEqual('<https://example.com//two//slashes>', self.dtm._dokuwiki_to_markdown('[[https://example.com//two//slashes]]', None, None))
+        self.assertEqual('[Example](https://example.com)', self.dtm._tr_links('[[https://example.com|Example]]'))
+        self.assertEqual('<https://example.com>', self.dtm._tr_links('[[https://example.com]]'))
+        self.assertEqual('<https://example.com//two//slashes>', self.dtm._tr_links('[[https://example.com//two//slashes]]'))
         # newline in link title
-        self.assertEqual('[Example title](https://example.com)', self.dtm._dokuwiki_to_markdown('[[https://example.com|\nExample\ntitle\n]]', None, None))
+        self.assertEqual('[Example title](https://example.com)', self.dtm._tr_links('[[https://example.com|\nExample\ntitle\n]]'))
 
     def test_headers(self):
         self.assertEqual('# Headline L1\n\n', self.dtm._tr_headers('====== Headline L1 ======\n'))

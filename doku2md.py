@@ -53,11 +53,11 @@ class DokuWiki2MarkDown:
             dokuwiki_text = DokuWiki2MarkDown._rm_timestamp(dokuwiki_text)
         dokuwiki_text = DokuWiki2MarkDown._extract_codeblocks(dokuwiki_text, codeblk_lang, codeblk_filename)
         dokuwiki_text = DokuWiki2MarkDown._extract_indentcode(dokuwiki_text, codeblk_lang)
+        dokuwiki_text = DokuWiki2MarkDown._extract_links(dokuwiki_text)
 
         # Transform the rest ()
         # - bold and block quotes share the same syntax in DokuWiki and MarkDown
         transforms = [
-            DokuWiki2MarkDown._tr_links_initial_escape,
             DokuWiki2MarkDown._tr_headers,
             DokuWiki2MarkDown._tr_italic,
             DokuWiki2MarkDown._tr_underline,
@@ -69,7 +69,6 @@ class DokuWiki2MarkDown:
             DokuWiki2MarkDown._tr_lists,
             DokuWiki2MarkDown._tr_backslashes,
             DokuWiki2MarkDown._tr_linebreaks,
-            DokuWiki2MarkDown._tr_links_unescape,
             DokuWiki2MarkDown._rm_single_space_at_line_end,
             DokuWiki2MarkDown._rm_nowiki,
             DokuWiki2MarkDown._rm_newlines,
@@ -109,37 +108,30 @@ class DokuWiki2MarkDown:
         return re.sub(r'<del>(.*?)</del>', r'~~\1~~', text)
 
     @staticmethod
-    def _tr_links_initial_escape(text: str) -> str:
+    def _extract_links(text: str) -> str:
+        def replace_link(match):
+            link = DokuWiki2MarkDown._tr_links(match.group(1))
+            unique_id = DokuWiki2MarkDown._store_codeblock(link)
+            return unique_id
+
+        return re.sub(r'(\[\[[^|]*?(\|(.*?)?)\]\])', replace_link, text, flags=re.DOTALL)
+
+    @staticmethod
+    def _tr_links(text: str) -> str:
         def replace_link(match):
             url = match.group('url')
             title = match.group('title')
-
-            # hack to avoid italic, bold, underline getting crushed
-            url = re.sub(r'/', "##URL#ESCAPED#SLASH##", url)
-            url = re.sub(r'\*', "##URL#ESCAPED#ASTERISK##", url)
-            url = re.sub(r'_', "##URL#ESCAPED#UNDERSCORE##", url)
+            link = ''
 
             if title:
                 # strip newlines from title
                 title = re.sub(r'\n', ' ', title.strip())
-
-                title = re.sub(r'/', "##URL#ESCAPED#SLASH##", title)
-                title = re.sub(r'\*', "##URL#ESCAPED#ASTERISK##", title)
-                title = re.sub(r'_', "##URL#ESCAPED#UNDERSCORE##", title)
-
-                return f'[{title}]({url})'
-
-            return f'<{url}>'
+                link = f'[{title}]({url})'
+            else:
+                link = f'<{url}>'
+            return link
 
         return re.sub(r'\[\[(?P<url>[^|]*?)(\|(?P<title>.*?))?\]\]', replace_link, text, flags=re.DOTALL)
-
-    @staticmethod
-    def _tr_links_unescape(text: str) -> str:
-        text = re.sub("##URL#ESCAPED#SLASH##", "/", text)
-        text = re.sub("##URL#ESCAPED#ASTERISK##", "*", text)
-        text = re.sub("##URL#ESCAPED#UNDERSCORE##", "_", text)
-        
-        return text
 
     @staticmethod
     def _tr_headers(text: str) -> str:
