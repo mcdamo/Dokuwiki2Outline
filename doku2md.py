@@ -13,7 +13,7 @@ class DokuWiki2MarkDown:
     line_idx = 0
 
     @staticmethod
-    def convert_file(filepath, lang, ts, codeblk_filename):
+    def convert_file(filepath, lang, ts, codeblk_filename, outputpath):
         try:
             with open(filepath, 'r') as f:
                 dokuwiki_text = f.read()
@@ -23,18 +23,24 @@ class DokuWiki2MarkDown:
 
         markdown_text = DokuWiki2MarkDown._dokuwiki_to_markdown(dokuwiki_text, lang, ts, codeblk_filename)
 
-        new_filepath = os.path.splitext(filepath)[0] + '.md'
+        if outputpath:
+            new_filepath = os.path.splitext(os.path.join(outputpath, filepath))[0] + '.md'
+            new_dirs = os.path.dirname(new_filepath)
+            os.makedirs(new_dirs, exist_ok=True)
+        else:
+            new_filepath = os.path.splitext(filepath)[0] + '.md'
+
         with open(new_filepath, 'w') as f:
             print(f"Saving {new_filepath}")
             f.write(markdown_text)
 
     @staticmethod
-    def convert_directory(directory, lang, ts, codeblk_filename):
+    def convert_directory(directory, lang, ts, codeblk_filename, outputpath):
         try:
             for root, dirs, files in os.walk(directory):
                 for file in files:
                     if file.endswith('.txt'):
-                        DokuWiki2MarkDown.convert_file(os.path.join(root, file), lang, ts, codeblk_filename)
+                        DokuWiki2MarkDown.convert_file(os.path.join(root, file), lang, ts, codeblk_filename, outputpath)
         except NotADirectoryError:
             print(f"Error: Directory {directory} not found.")
 
@@ -77,7 +83,7 @@ class DokuWiki2MarkDown:
 
     @staticmethod
     def _store_codeblock(code_block):
-        unique_id = '[' + str(uuid.uuid4()) + ']'
+        unique_id = '{' + str(uuid.uuid4()) + '}'
         DokuWiki2MarkDown.codeblks.append((unique_id, code_block))
         return unique_id
 
@@ -340,6 +346,7 @@ def main():
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-f', '--file', help='File to convert.')
     group.add_argument('-d', '--directory', help='Directory of files to convert.')
+    parser.add_argument('-o', '--outputpath', help='Destination directory for converted files.')
     parser.add_argument('-l', '--lang', help='Codeblocks will be labeled with this Language (eg. shell).')
     parser.add_argument('-T', '--timestamps', dest='timestamps', action='store_true',
                         help='Keep textual timestamps in documents. (Default is to remove timestamps)')
@@ -349,9 +356,9 @@ def main():
     args = parser.parse_args()
     dw2md = DokuWiki2MarkDown()
     if args.file:
-        dw2md.convert_file(args.file, args.lang, args.timestamps, args.codefile)
+        dw2md.convert_file(args.file, args.lang, args.timestamps, args.codefile, args.outputpath)
     elif args.directory:
-        dw2md.convert_directory(args.directory, args.lang, args.timestamps, args.codefile)
+        dw2md.convert_directory(args.directory, args.lang, args.timestamps, args.codefile, args.outputpath)
 
 
 if __name__ == '__main__':
