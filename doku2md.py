@@ -397,6 +397,7 @@ class DokuWiki2MarkDown:
                     in_code = False
                     lang_type = '' if codeblk_lang is None else codeblk_lang
                     code_block = f'```{lang_type}\n' + '\n'.join(code_lines) + '\n```'
+                    code_lines = []
                     unique_id = DokuWiki2MarkDown._store_codeblock(code_block)
                     output_markdown.append(f'{unique_id}')
                 output_markdown.append(line)
