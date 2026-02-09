@@ -83,6 +83,7 @@ class DokuWiki2MarkDown:
             dokuwiki_text = DokuWiki2MarkDown._rm_timestamp(dokuwiki_text)
         dokuwiki_text = DokuWiki2MarkDown._extract_codeblocks(dokuwiki_text, codeblk_lang, codeblk_filename)
         dokuwiki_text = DokuWiki2MarkDown._extract_indentcode(dokuwiki_text, codeblk_lang)
+        dokuwiki_text = DokuWiki2MarkDown._extract_monospaced(dokuwiki_text)
         dokuwiki_text = DokuWiki2MarkDown._extract_links(dokuwiki_text, outline, dirpath)
 
         # Transform the rest ()
@@ -91,7 +92,6 @@ class DokuWiki2MarkDown:
             DokuWiki2MarkDown._tr_headers,
             DokuWiki2MarkDown._tr_italic,
             DokuWiki2MarkDown._tr_underline,
-            DokuWiki2MarkDown._tr_monospaced,
             DokuWiki2MarkDown._tr_strikethrough,
             DokuWiki2MarkDown._tr_images,
             DokuWiki2MarkDown._tr_footnotes,
@@ -137,6 +137,16 @@ class DokuWiki2MarkDown:
     def _tr_underline(text: str) -> str:
         # Underline (not supported in Markdown, converted to bold)
         return re.sub(r'__(.*?)__', r'**\1**', text)
+
+    @staticmethod
+    def _extract_monospaced(text: str) -> str:
+        def replace_block(match):
+            block = DokuWiki2MarkDown._tr_monospaced(match.group(1))
+            block = DokuWiki2MarkDown._rm_nowiki(block)
+            unique_id = DokuWiki2MarkDown._store_codeblock(block)
+            return unique_id
+
+        return re.sub(r'(\'\'.*?\'\')', replace_block, text)
 
     @staticmethod
     def _tr_monospaced(text: str) -> str:
