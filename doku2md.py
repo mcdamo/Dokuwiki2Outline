@@ -9,6 +9,8 @@ import uuid
 class DokuWiki2MarkDown:
 
     codeblks = []
+    lines = []
+    line_idx = 0
 
     @staticmethod
     def convert_file(filepath, lang, ts, codeblk_filename):
@@ -169,24 +171,67 @@ class DokuWiki2MarkDown:
         return re.sub(r' *\\{2} *\n', r'  \n', text)
 
     @staticmethod
-    def _tr_lists(text: str) -> str:
-        lines = text.split('\n')
+    def _tr_list_items(indentation, i, line):
+        def process_line(i, match, ordered_list_counter):
+            spaces, bullet, rest = match.groups()
+            if bullet == '-':
+                ordered_list_counter += 1
+                bullet = str(ordered_list_counter) + '.'
+            else:
+                # It's an unordered list item
+                bullet = '*'
+                # Reset counter when encountering an unordered list item
+                ordered_list_counter = 0
+            DokuWiki2MarkDown.lines[i] = '  '*indentation + bullet + rest
+            return (ordered_list_counter, bullet)
+
         ordered_list_counter = 0
-        for i, line in enumerate(lines):
-            match = re.match(r'(\s*)([-*])(.*)', line)
-            if match and not line.startswith("----"):
+
+        while True:
+            match = DokuWiki2MarkDown._tr_lists_match(line)
+            if match:
                 spaces, bullet, rest = match.groups()
-                indentation = len(spaces) // 2 - 1
-                if bullet == '-':
-                    ordered_list_counter += 1
-                    bullet = str(ordered_list_counter) + '.'
+                next_indentation = len(spaces) // 2 - 1
+                if next_indentation > indentation:
+                    (i, line) = DokuWiki2MarkDown._tr_list_items(next_indentation, i, line)
+                    if i is not None:
+                        continue
+                elif next_indentation < indentation:
+                    return (i, line)
                 else:
-                    # It's an unordered list item
-                    bullet = '*'
-                    # Reset counter when encountering an unordered list item
-                    ordered_list_counter = 0
-                lines[i] = '  '*indentation + bullet + rest
-        return '\n'.join(lines)
+                    (ordered_list_counter, bullet) = process_line(i, match, ordered_list_counter)
+            else:
+                return (None, None)
+
+            (i, line) = DokuWiki2MarkDown._tr_lists_line()
+            if i is None:
+                return (None, None)
+
+    @staticmethod
+    def _tr_lists_line():
+        idx = DokuWiki2MarkDown.line_idx
+        if idx > len(DokuWiki2MarkDown.lines) - 1:
+            return (None, None)
+        line = DokuWiki2MarkDown.lines[idx]
+        DokuWiki2MarkDown.line_idx = idx + 1
+        return (idx, line)
+
+    @staticmethod
+    def _tr_lists_match(line):
+        return re.match(r'(  \s*)([-*])(.*)', line)
+
+    @staticmethod
+    def _tr_lists(text: str) -> str:
+        DokuWiki2MarkDown.lines = text.split('\n')
+        DokuWiki2MarkDown.line_idx = 0
+
+        while True:
+            (i, line) = DokuWiki2MarkDown._tr_lists_line()
+            if i is None:
+                break
+            DokuWiki2MarkDown._tr_list_items(0, i, line)
+
+        return '\n'.join(DokuWiki2MarkDown.lines)
 
     @staticmethod
     def _tr_tables(input_dokuwiki):
