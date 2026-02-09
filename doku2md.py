@@ -46,6 +46,7 @@ class DokuWiki2MarkDown:
         if not timestamps:
             dokuwiki_text = DokuWiki2MarkDown._rm_timestamp(dokuwiki_text)
         dokuwiki_text = DokuWiki2MarkDown._extract_codeblocks(dokuwiki_text, codeblk_lang, codeblk_filename)
+        dokuwiki_text = DokuWiki2MarkDown._extract_indentcode(dokuwiki_text, codeblk_lang)
 
         # Transform the rest ()
         # - bold and block quotes share the same syntax in DokuWiki and MarkDown
@@ -73,6 +74,12 @@ class DokuWiki2MarkDown:
             dokuwiki_text = dokuwiki_text.replace(unique_id, codeblk)
 
         return dokuwiki_text
+
+    @staticmethod
+    def _store_codeblock(code_block):
+        unique_id = '[' + str(uuid.uuid4()) + ']'
+        DokuWiki2MarkDown.codeblks.append((unique_id, code_block))
+        return unique_id
 
     @staticmethod
     def _rm_timestamp(text: str) -> str:
@@ -137,12 +144,11 @@ class DokuWiki2MarkDown:
     @staticmethod
     def _extract_codeblocks(text: str, lang, codeblk_filename=False) -> str:
         def replace_block(match):
-            unique_id = '[' + str(uuid.uuid4()) + ']'
             listitem = match.group('listitem')
             listitem = '' if listitem is None else listitem
             indent = ' ' * (len(listitem) - 2) # adjust for markdown indentation
-            ret = DokuWiki2MarkDown._tr_codeblocks(match.group('block'), lang, codeblk_filename, indent)
-            DokuWiki2MarkDown.codeblks.append((unique_id, ret))
+            code_block = DokuWiki2MarkDown._tr_codeblocks(match.group('block'), lang, codeblk_filename, indent)
+            unique_id = DokuWiki2MarkDown._store_codeblock(code_block)
             return f'{listitem}{unique_id}\n'
 
         return re.sub(r'(?P<listitem> +[*-] +)?(?P<block><(?:code|file)[^>]*>\n{0,}(.*?)\n{0,}</(?:code|file)>)', replace_block, text, flags=re.DOTALL)
@@ -287,6 +293,31 @@ class DokuWiki2MarkDown:
         if (in_table):
             output_markdown.append('')
         # Join the Markdown lines into a single string and return
+        text = '\n'.join(output_markdown)
+        return text
+
+    @staticmethod
+    def _extract_indentcode(input_dokuwiki, codeblk_lang):
+        lines = input_dokuwiki.split('\n')  # Splitting the DokuWiki text into lines
+        in_code = False  # Flag to indicate whether we are currently processing a code block
+        output_markdown = []  # List to store the converted Markdown lines
+        code_lines = []
+
+        for line in lines:
+            # Check if the line is indented and not a list
+            if match := re.match(r'^(  +)[^*\- ]', line):
+                if not in_code:  # Entering code
+                    in_code = True
+                indent = len(match.group(1))
+                code_lines.append(line[indent:]) # remove indent
+            else:
+                if in_code:  # Exiting code
+                    in_code = False
+                    lang_type = '' if codeblk_lang is None else codeblk_lang
+                    code_block = f'```{lang_type}\n' + '\n'.join(code_lines) + '\n```'
+                    unique_id = DokuWiki2MarkDown._store_codeblock(code_block)
+                    output_markdown.append(f'{unique_id}')
+                output_markdown.append(line)
         text = '\n'.join(output_markdown)
         return text
 

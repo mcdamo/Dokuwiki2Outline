@@ -94,6 +94,9 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         # code blocks nested in lists should be indented to the same level
         self.assertEqual('* ```\n  code\n  text\n  ```\n', self.dtm._dokuwiki_to_markdown('  * <code>code\ntext\n</code>', None, None))
         self.assertEqual('  * ```\n    code\n    text\n    ```\n', self.dtm._dokuwiki_to_markdown('    * <code>code\ntext\n</code>', None, None))
+        # works with indented code blocks
+        self.assertEqual('```\ncode\ntext\n```\n', self.dtm._dokuwiki_to_markdown('  code\n  text\n', None, None))
+        self.assertEqual('```shell\ncode\ntext\n```\n', self.dtm._dokuwiki_to_markdown('  code\n  text\n', 'shell', None))
 
 
     def test_images(self):
