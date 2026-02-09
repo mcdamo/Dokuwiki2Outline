@@ -44,11 +44,27 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         self.assertEqual('~~strikethrough text~~ \n', self.dtm._tr_strikethrough('<del>strikethrough text</del> \n'))
 
     def test_links(self):
-        self.assertEqual('[Example](https://example.com)', self.dtm._tr_links('[[https://example.com|Example]]'))
-        self.assertEqual('<https://example.com>', self.dtm._tr_links('[[https://example.com]]'))
-        self.assertEqual('<https://example.com//two//slashes>', self.dtm._tr_links('[[https://example.com//two//slashes]]'))
+        self.assertEqual('[Example](https://example.com)', self.dtm._tr_links('[[https://example.com|Example]]', True))
+        self.assertEqual('<https://example.com>', self.dtm._tr_links('[[https://example.com]]', True))
+        self.assertEqual('<https://example.com//two//slashes>', self.dtm._tr_links('[[https://example.com//two//slashes]]', True))
         # newline in link title
-        self.assertEqual('[Example title](https://example.com)', self.dtm._tr_links('[[https://example.com|\nExample\ntitle\n]]'))
+        self.assertEqual('[Example title](https://example.com)', self.dtm._tr_links('[[https://example.com|\nExample\ntitle\n]]', True))
+
+        ## internal links
+        # relative links without a page name are tricky, needs to know the current pages path
+        self.assertEqual('<../p3.md>', self.dtm._tr_links('[[.:]]', True, '/p1/p2/p3'))
+        self.assertEqual('<../../p2.md>', self.dtm._tr_links('[[..:]]', True, '/p1/p2/p3'))
+        self.assertEqual('<../../../p1.md>', self.dtm._tr_links('[[..:..:]]', True, '/p1/p2/p3'))
+        # page and folder links
+        self.assertEqual('<../dir1/doc.md>', self.dtm._tr_links('[[..:dir1:doc#search]]', True, ''))
+        self.assertEqual('<../dir1/dir2.md>', self.dtm._tr_links('[[..:dir1:dir2:#search]]', True, ''))
+        self.assertEqual('<./doc.md>', self.dtm._tr_links('[[.doc]]', True, ''))
+        self.assertEqual('<./doc.md>', self.dtm._tr_links('[[doc]]', True, ''))
+        self.assertEqual('</dir.md>', self.dtm._tr_links('[[dir:]]', True, ''))
+        self.assertEqual('<./dir1/dir2.md>', self.dtm._tr_links('[[.:dir1:dir2:]]', True, ''))
+        self.assertEqual('<./dir1/dir2/doc.md>', self.dtm._tr_links('[[.:dir1:dir2:doc]]', True, ''))
+        self.assertEqual('</dir1/page.md>', self.dtm._tr_links('[[dir1:page]]', True, ''))
+        self.assertEqual('</dir1/image-1.jpg>', self.dtm._tr_links('[[dir1:image-1.jpg]]', True, ''))
 
     def test_headers(self):
         self.assertEqual('# Headline L1\n\n', self.dtm._tr_headers('====== Headline L1 ======\n'))
