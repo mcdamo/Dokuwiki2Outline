@@ -85,6 +85,7 @@ class DokuWiki2MarkDown:
         dokuwiki_text = DokuWiki2MarkDown._extract_indentcode(dokuwiki_text, codeblk_lang)
         dokuwiki_text = DokuWiki2MarkDown._extract_monospaced(dokuwiki_text)
         dokuwiki_text = DokuWiki2MarkDown._extract_links(dokuwiki_text, outline, dirpath)
+        dokuwiki_text = DokuWiki2MarkDown._extract_rawlinks(dokuwiki_text)
 
         # Transform the rest ()
         # - bold and block quotes share the same syntax in DokuWiki and MarkDown
@@ -220,6 +221,24 @@ class DokuWiki2MarkDown:
             return link
 
         return re.sub(r'\[\[(?P<url>[^|]*?)(\|(?P<title>.*?))?\]\]', replace_link, text, flags=re.DOTALL)
+
+    @staticmethod
+    def _extract_rawlinks(text: str) -> str:
+        def replace_link(match):
+            link = DokuWiki2MarkDown._tr_rawlinks(match.group(1))
+            unique_id = DokuWiki2MarkDown._store_codeblock(link)
+            return unique_id
+
+        return re.sub(r'(https?://[^\s]+)', replace_link, text, flags=re.DOTALL)
+
+    @staticmethod
+    def _tr_rawlinks(text: str) -> str:
+        def replace_link(match):
+            url = match.group(1)
+            link = f'<{url}>'
+            return link
+
+        return re.sub(r'(https?://[^\s]+)', replace_link, text, flags=re.DOTALL)
 
     @staticmethod
     def _tr_headers(text: str) -> str:

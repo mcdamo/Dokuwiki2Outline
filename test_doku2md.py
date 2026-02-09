@@ -66,6 +66,10 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         self.assertEqual('</dir1/page.md>', self.dtm._tr_links('[[dir1:page]]', True, ''))
         self.assertEqual('</dir1/image-1.jpg>', self.dtm._tr_links('[[dir1:image-1.jpg]]', True, ''))
 
+    def test_rawlinks(self):
+        self.assertEqual('<https://example.com>', self.dtm._tr_rawlinks('https://example.com'))
+        self.assertEqual(' <https://example.com> ', self.dtm._tr_rawlinks(' https://example.com '))
+
     def test_headers(self):
         self.assertEqual('# Headline L1\n\n', self.dtm._tr_headers('====== Headline L1 ======\n'))
         self.assertEqual('# Headline L1\n\n', self.dtm._tr_headers('====== Headline L1 ======\n\n'))
