@@ -42,6 +42,7 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         self.assertEqual('<del>not strikethrough text<del>', self.dtm._tr_strikethrough('<del>not strikethrough text<del>'))
         self.assertEqual('\n ~~strikethrough text~~', self.dtm._tr_strikethrough('\n <del>strikethrough text</del>'))
         self.assertEqual('~~strikethrough text~~ \n', self.dtm._tr_strikethrough('<del>strikethrough text</del> \n'))
+        self.assertEqual('\n~~strikethrough text~~\n', self.dtm._tr_strikethrough('<del>\nstrikethrough text\n</del>'))
 
     def test_links(self):
         self.assertEqual('[Example](https://example.com)', self.dtm._tr_links('[[https://example.com|Example]]', True))
@@ -52,19 +53,30 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
 
         ## internal links
         # relative links without a page name are tricky, needs to know the current pages path
-        self.assertEqual('<../p3.md>', self.dtm._tr_links('[[.:]]', True, '/p1/p2/p3'))
-        self.assertEqual('<../../p2.md>', self.dtm._tr_links('[[..:]]', True, '/p1/p2/p3'))
-        self.assertEqual('<../../../p1.md>', self.dtm._tr_links('[[..:..:]]', True, '/p1/p2/p3'))
-        # page and folder links
-        self.assertEqual('<../dir1/doc.md>', self.dtm._tr_links('[[..:dir1:doc#search]]', True, ''))
-        self.assertEqual('<../dir1/dir2.md>', self.dtm._tr_links('[[..:dir1:dir2:#search]]', True, ''))
-        self.assertEqual('<./doc.md>', self.dtm._tr_links('[[.doc]]', True, ''))
-        self.assertEqual('<./doc.md>', self.dtm._tr_links('[[doc]]', True, ''))
-        self.assertEqual('</dir.md>', self.dtm._tr_links('[[dir:]]', True, ''))
-        self.assertEqual('<./dir1/dir2.md>', self.dtm._tr_links('[[.:dir1:dir2:]]', True, ''))
-        self.assertEqual('<./dir1/dir2/doc.md>', self.dtm._tr_links('[[.:dir1:dir2:doc]]', True, ''))
-        self.assertEqual('</dir1/page.md>', self.dtm._tr_links('[[dir1:page]]', True, ''))
-        self.assertEqual('</dir1/image-1.jpg>', self.dtm._tr_links('[[dir1:image-1.jpg]]', True, ''))
+        self.assertEqual('[.:](../p3.md)', self.dtm._tr_links('[[.:]]', True, '/p1/p2/p3'))
+        self.assertEqual('[..:](../../p2.md)', self.dtm._tr_links('[[..:]]', True, '/p1/p2/p3'))
+        # page and folder (inks
+        self.assertEqual('[..:dir1:doc#search](../dir1/doc.md)', self.dtm._tr_links('[[..:dir1:doc#search]]', True, ''))
+        self.assertEqual('[..:dir1:dir2:#search](../dir1/dir2.md)', self.dtm._tr_links('[[..:dir1:dir2:#search]]', True, ''))
+        self.assertEqual('[.doc](./doc.md)', self.dtm._tr_links('[[.doc]]', True, ''))
+        self.assertEqual('[doc](./doc.md)', self.dtm._tr_links('[[doc]]', True, ''))
+        self.assertEqual('[dir:](/dir.md)', self.dtm._tr_links('[[dir:]]', True, ''))
+        self.assertEqual('[.:dir1:dir2:](./dir1/dir2.md)', self.dtm._tr_links('[[.:dir1:dir2:]]', True, ''))
+        self.assertEqual('[.:dir1:dir2:doc](./dir1/dir2/doc.md)', self.dtm._tr_links('[[.:dir1:dir2:doc]]', True, ''))
+        self.assertEqual('[:dir1:dir2:](/dir1/dir2.md)', self.dtm._tr_links('[[:dir1:dir2:]]', True, ''))
+        self.assertEqual('[dir1:page](/dir1/page.md)', self.dtm._tr_links('[[dir1:page]]', True, ''))
+        self.assertEqual('[dir1:image-1.jpg](/dir1/image-1.jpg)', self.dtm._tr_links('[[dir1:image-1.jpg]]', True, ''))
+
+        ## page_moved=True: page moved to parent folder, so relative links need adjusting
+        self.assertEqual('[.:](./p3.md)', self.dtm._tr_links('[[.:]]', True, '/p1/p2/p3', True))
+        self.assertEqual('[..:](../p2.md)', self.dtm._tr_links('[[..:]]', True, '/p1/p2/p3', True))
+        # page and folder (inks
+        self.assertEqual('[..:dir1:doc#search](./dir1/doc.md)', self.dtm._tr_links('[[..:dir1:doc#search]]', True, '', True))
+        self.assertEqual('[..:dir1:dir2:#search](./dir1/dir2.md)', self.dtm._tr_links('[[..:dir1:dir2:#search]]', True, '', True))
+        self.assertEqual('[.doc](./p3/doc.md)', self.dtm._tr_links('[[.doc]]', True, '/p1/p2/p3', True))
+        self.assertEqual('[doc](./p3/doc.md)', self.dtm._tr_links('[[doc]]', True, '/p1/p2/p3', True))
+        self.assertEqual('[.:dir1:dir2:](./p3/dir1/dir2.md)', self.dtm._tr_links('[[.:dir1:dir2:]]', True, '/p1/p2/p3', True))
+        self.assertEqual('[.:dir1:dir2:doc](./p3/dir1/dir2/doc.md)', self.dtm._tr_links('[[.:dir1:dir2:doc]]', True, '/p1/p2/p3', True))
 
     def test_rawlinks(self):
         self.assertEqual('<https://example.com>', self.dtm._tr_rawlinks('https://example.com'))
@@ -74,12 +86,15 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         self.assertEqual('# Headline L1\n\n', self.dtm._tr_headers('====== Headline L1 ======\n'))
         self.assertEqual('# Headline L1\n\n', self.dtm._tr_headers('====== Headline L1 ======\n\n'))
         self.assertEqual('# Headline L1\n\n', self.dtm._tr_headers('====== Headline L1 ======\n \n'))
-        self.assertEqual('# Headline L1\n\n', self.dtm._tr_headers('====== Headline L1 ======\n \n \n '))
+        self.assertEqual('# Headline L1\n\n', self.dtm._tr_headers('====== Headline L1 ======\n \n \n'))
         self.assertEqual('## Headline L2\n\n', self.dtm._tr_headers('===== Headline L2 =====\n'))
         self.assertEqual('### Headline L3\n\n', self.dtm._tr_headers('==== Headline L3 ====\n'))
         self.assertEqual('#### Headline L4\n\n', self.dtm._tr_headers('=== Headline L4 ===\n'))
         self.assertEqual('##### Headline L5\n\n', self.dtm._tr_headers('== Headline L5 ==\n'))
         self.assertEqual('= Not A Headline =\n', self.dtm._tr_headers('= Not A Headline =\n'))
+        # handle header with mismatched number of =
+        self.assertEqual('### Headline L3\n\n', self.dtm._tr_headers('==== Headline L3 ===\n'))
+        self.assertEqual('### Headline L3\n\n', self.dtm._tr_headers('==== Headline L3 =====\n'))
 
     def test_code_blocks(self):
         self.assertEqual('```\ncode text\n```', self.dtm._tr_codeblocks('<code>\ncode text\n</code>', None))
@@ -112,8 +127,8 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         # do not apply any conversions inside code blocks
         self.assertEqual('```\n[[:not-a-link:]]\n//not-italic//\n```\n', self.dtm._dokuwiki_to_markdown('<code>[[:not-a-link:]]\n//not-italic//\n</code>', None, None))
         # code blocks nested in lists should be indented to the same level
-        self.assertEqual('* ```\n  code\n  text\n  ```\n', self.dtm._dokuwiki_to_markdown('  * <code>code\ntext\n</code>', None, None))
-        self.assertEqual('  * ```\n    code\n    text\n    ```\n', self.dtm._dokuwiki_to_markdown('    * <code>code\ntext\n</code>', None, None))
+        self.assertEqual('* ```\n  code\n  text\n  ```\n\n', self.dtm._dokuwiki_to_markdown('  * <code>code\ntext\n</code>', None, None))
+        self.assertEqual('  * ```\n    code\n    text\n    ```\n\n', self.dtm._dokuwiki_to_markdown('    * <code>code\ntext\n</code>', None, None))
         # works with indented code blocks
         self.assertEqual('```\ncode\ntext\n```\n', self.dtm._dokuwiki_to_markdown('  code\n  text\n', None, None))
         self.assertEqual('```shell\ncode\ntext\n```\n', self.dtm._dokuwiki_to_markdown('  code\n  text\n', 'shell', None))

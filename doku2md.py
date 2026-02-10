@@ -27,18 +27,20 @@ class DokuWiki2MarkDown:
         else:
             new_filepath = os.path.splitext(filepath)[0] + '.md'
 
-        filename = os.path.splitext(os.path.basename(new_filepath))[0]
-        dirpath = os.path.dirname(new_filepath)
-        dirname = os.path.basename(dirpath)
+        orig_filename = os.path.splitext(os.path.basename(new_filepath))[0]
+        orig_dirpath = os.path.dirname(new_filepath)
+        orig_dirname = os.path.basename(orig_dirpath)
+        page_moved = False
 
-        if outline and filename == 'start':
-            dirpath = os.path.dirname(new_filepath)
-            dirname = os.path.basename(dirpath)
-            parent = Path(dirpath).parent
-            new_filepath = os.path.join(parent, f'{dirname}.md')
+        if outline and orig_filename == 'start':
+            parent = Path(orig_dirpath).parent
+            new_filepath = os.path.join(parent, f'{orig_dirname}.md')
             if os.path.exists(new_filepath):
                 print(f"WARNING overwriting: {new_filepath}")
             filename = os.path.splitext(os.path.basename(new_filepath))[0]
+            page_moved = True
+        else:
+            filename = orig_filename
 
         os.makedirs(os.path.dirname(new_filepath), exist_ok=True)
 
@@ -49,7 +51,8 @@ class DokuWiki2MarkDown:
                 codeblk_filename=codeblk_filename,
                 outline=outline,
                 filename=filename,
-                dirpath=dirpath
+                dirpath=orig_dirpath,
+                page_moved=page_moved
             )
 
         with open(new_filepath, 'w') as f:
@@ -75,7 +78,7 @@ class DokuWiki2MarkDown:
             print(f"Error: Directory {directory} not found.")
 
     @staticmethod
-    def _dokuwiki_to_markdown(dokuwiki_text, codeblk_lang, timestamps, codeblk_filename=False, outline=False, filename=None, dirpath=None):
+    def _dokuwiki_to_markdown(dokuwiki_text, codeblk_lang, timestamps, codeblk_filename=False, outline=False, filename=None, dirpath=None, page_moved=False):
 
         DokuWiki2MarkDown.codeblks = []
         # Remove timestamps if elected
@@ -84,7 +87,7 @@ class DokuWiki2MarkDown:
         dokuwiki_text = DokuWiki2MarkDown._extract_codeblocks(dokuwiki_text, codeblk_lang, codeblk_filename)
         dokuwiki_text = DokuWiki2MarkDown._extract_indentcode(dokuwiki_text, codeblk_lang)
         dokuwiki_text = DokuWiki2MarkDown._extract_monospaced(dokuwiki_text)
-        dokuwiki_text = DokuWiki2MarkDown._extract_links(dokuwiki_text, outline, dirpath)
+        dokuwiki_text = DokuWiki2MarkDown._extract_links(dokuwiki_text, outline, dirpath, page_moved)
         dokuwiki_text = DokuWiki2MarkDown._extract_rawlinks(dokuwiki_text)
 
         # Transform the rest ()
@@ -155,19 +158,30 @@ class DokuWiki2MarkDown:
 
     @staticmethod
     def _tr_strikethrough(text: str) -> str:
-        return re.sub(r'<del>(.*?)</del>', r'~~\1~~', text)
+        # DokuWiki allows strikethrough spanning newlines
+        def handle_newlines(match):
+            lines = match.group(1).split('\n')
+            output = []
+            for line in lines:
+                if line.strip() != '':
+                    output.append('~~' + line + '~~')
+                else:
+                    output.append('')
+            return '\n'.join(output)
+
+        return re.sub(r'<del>(.*?)</del>', handle_newlines, text, flags=re.DOTALL)
 
     @staticmethod
-    def _extract_links(text: str, outline=False, dirpath='') -> str:
+    def _extract_links(text: str, outline=False, dirpath='', page_moved=False) -> str:
         def replace_link(match):
-            link = DokuWiki2MarkDown._tr_links(match.group(1), outline, dirpath)
+            link = DokuWiki2MarkDown._tr_links(match.group(1), outline, dirpath, page_moved)
             unique_id = DokuWiki2MarkDown._store_codeblock(link)
             return unique_id
 
-        return re.sub(r'(\[\[[^|]*?(\|(.*?)?)\]\])', replace_link, text, flags=re.DOTALL)
+        return re.sub(r'(\[\[[^|\]]+(\|([^]]+)?)?\]\])', replace_link, text, flags=re.DOTALL)
 
     @staticmethod
-    def _tr_links(text: str, outline=False, dirpath='') -> str:
+    def _tr_links(text: str, outline=False, dirpath='', page_moved=False) -> str:
         def replace_link(match):
             url = match.group('url').strip()
             title = match.group('title')
@@ -177,50 +191,117 @@ class DokuWiki2MarkDown:
                 '''
                 translate some special internal page links
                 '''
-                # two levels up should be enough
-                if re.match(r'..:..:(#.*)?$', url):
-                    dirname = os.path.basename(Path(dirpath).parent.parent)
-                    return re.sub(r'^..:..:(#.*)?$', rf'../../../{dirname}.md', url)
-                # one level up
-                if re.match(r'..:(#.*)?$', url):
-                    dirname = os.path.basename(Path(dirpath).parent)
-                    return re.sub(r'^..:(#.*)?$', rf'../../{dirname}.md', url)
-                # current dir
-                if re.match(r'^.:(#.*)?$', url):
-                    dirname = os.path.basename(dirpath)
-                    return re.sub(r'^.:(#.*)?$', rf'../{dirname}.md', url)
+                original_url = url
 
-                # remove #search part
-                url = re.sub(r'^([^#]+?)(#.*)?$', rf'\1', url)
-                # convert path separators
-                url = re.sub(r':', r'/', url)
-                if url.find('/') >= 0:
-                    # add initial slash for absolute links: 'page/' => '/page/'
-                    url = re.sub(r'^([^./])', rf'/\1', url)
-                else:
-                    # add initial dotslash for relative links: 'page' => './page'
-                    url = re.sub(r'^([^./])', rf'./\1', url)
-                # add slash between dots and page name: '.page' => './page'
-                url = re.sub(r'^(\.+)([^./])', rf'\1/\2', url)
-                # remove trailing slash
-                url = url[:-1] if url.endswith('/') else url
-                # add .md extension if no extension present
-                url = url if re.search(r'\.\w+$', url) else f'{url}.md'
+                def build_url_components(path):
+                    components = path.split(':')
+                    if components[0] == '.':
+                        # relative link
+                        print('dot url')
+                        special = False
+                        if path.strip('.:') == '':
+                            print('special relative url')
+                            # special relative link
+                            special = True
+                        if components[-1] == '':
+                            if special:
+                                if not page_moved:
+                                    components[0] = '..'
+                                components[-1] = os.path.basename(dirpath)
+                                return components
+                            else:
+                                del components[-1]
+                        if page_moved:
+                            components.insert(1, os.path.basename(dirpath))
+                        return components
 
-                return url
+                    if components[0] == '..':
+                        print('relative url')
+                        curpath = dirpath
+                        special = False
+                        if path.strip('.:') == '':
+                            print('special relative url')
+                            # special relative link
+                            curpath = Path(dirpath)
+                            special = True
+                            for _ in components:
+                                if _ == '..':
+                                    curpath = curpath.parent
+                                elif _ == '':
+                                    special = special
+                                else:
+                                    special = False
+                            print(f'Curpath: {curpath}')
+                        if page_moved:
+                            print('special page moved')
+                            components[0] = '.'
+                        if components[-1] == '':
+                            print('ends with dir')
+                            del components[-1]
+                            if special:
+                                components[:0] = ['..'] # unshift
+                                if not page_moved:
+                                    components[:0] = ['..'] # unshift
+                                components[-1] = os.path.basename(curpath)
+                        return components
+
+                    if path[0] == '.':
+                        # special relative page link
+                        components = ['.', path[1:] ]
+                        if page_moved:
+                            components.insert(1, os.path.basename(dirpath))
+                        return components
+
+                    if ':' in path:
+                        # absolute link
+                        print('absolute link')
+                        if components[0] != '':
+                            components[:0] = [''] # unshift
+                        if components[-1] == '':
+                            print('ends with dir')
+                            del components[-1]
+                        return components
+                    else:
+                        # link to page
+                        print("link to page")
+                        components[:0] = '.'
+                        if page_moved:
+                            components.insert(1, os.path.basename(dirpath))
+                        return components
+
+                    # if this is reached then something is wrong
+                    raise Error(f'Unable to convert local url: {original_url}')
+
+                print(f'url: {url}  dirpath: {dirpath}')
+                if match := re.match(r'([^#]*)(#.*)?$', url):
+                    path = match.group(1)
+                    if path:
+                        components = build_url_components(path)
+                        if '.' not in components[-1]:
+                            components[-1] += '.md'
+                        url = '/'.join(components)
+                    else:
+                        raise Error(f'No path created for url: {original_url}')
+                    return url
+                raise Error(f'No path matched in url: {original_url}')
 
             if outline and re.match(r"([\.:].*)|([\w]+(:([^/].*)?)?)$", url):
+                # always include a title for internal links
+                title = title if title else url
                 url = fix_internal_link(url)
 
             if title:
                 # strip newlines from title
                 title = re.sub(r'\n', ' ', title.strip())
+                # escape special characters
+                title = re.sub(r'\$', r'\$', title)
+
                 link = f'[{title}]({url})'
             else:
                 link = f'<{url}>'
             return link
 
-        return re.sub(r'\[\[(?P<url>[^|]*?)(\|(?P<title>.*?))?\]\]', replace_link, text, flags=re.DOTALL)
+        return re.sub(r'\[\[(?P<url>[^|\]]*?)(\|(?P<title>[^\]]+)?)?\]\]', replace_link, text, flags=re.DOTALL)
 
     @staticmethod
     def _extract_rawlinks(text: str) -> str:
@@ -243,7 +324,7 @@ class DokuWiki2MarkDown:
     @staticmethod
     def _tr_headers(text: str) -> str:
         for i in range(6, 1, -1):
-            text = re.sub(rf" *{'=' * i} *(.*?) *{'=' * i} *\s+", rf"{'#' * (7 - i)} \1\n\n", text)
+            text = re.sub(rf" *{'=' * i} *(.*?) *=+ *\s*\n", rf"{'#' * (7 - i)} \1\n\n", text)
         return text
 
     @staticmethod
@@ -310,12 +391,16 @@ class DokuWiki2MarkDown:
             return (ordered_list_counter, bullet)
 
         ordered_list_counter = 0
+        in_list = False
 
         while True:
             match = DokuWiki2MarkDown._tr_lists_match(line)
+            #print(f'line {i}: {indentation} {line}')
             if match:
+                in_list = True
                 spaces, bullet, rest = match.groups()
                 next_indentation = len(spaces) // 2 - 1
+                #print(f'\tmatch {i}: {indentation}=>{next_indentation}')
                 if next_indentation > indentation:
                     (i, line) = DokuWiki2MarkDown._tr_list_items(next_indentation, i, line)
                     if i is not None:
@@ -325,6 +410,9 @@ class DokuWiki2MarkDown:
                 else:
                     (ordered_list_counter, bullet) = process_line(i, match, ordered_list_counter)
             else:
+                if in_list == True:
+                    # add an extra newline after the end of a list
+                    DokuWiki2MarkDown.lines[i-1] += '\n'
                 return (None, None)
 
             (i, line) = DokuWiki2MarkDown._tr_lists_line()
@@ -342,7 +430,7 @@ class DokuWiki2MarkDown:
 
     @staticmethod
     def _tr_lists_match(line):
-        return re.match(r'(  \s*)([-*])(.*)', line)
+        return re.match(r'(  \s*)([\-\*])(.*)', line)
 
     @staticmethod
     def _tr_lists(text: str) -> str:
