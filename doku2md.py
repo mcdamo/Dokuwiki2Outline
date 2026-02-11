@@ -335,9 +335,9 @@ class DokuWiki2MarkDown:
             indent = ' ' * (len(listitem) - 2) # adjust for markdown indentation
             code_block = DokuWiki2MarkDown._tr_codeblocks(match.group('block'), lang, codeblk_filename, indent)
             unique_id = DokuWiki2MarkDown._store_codeblock(code_block)
-            return f'{listitem}{unique_id}\n'
+            return f'{listitem}{unique_id}'
 
-        return re.sub(r'(?P<listitem> +[*-] +)?(?P<block><(?:code|file)[^>]*>\n{0,}(.*?)\n{0,}</(?:code|file)>)', replace_block, text, flags=re.DOTALL)
+        return re.sub(r'(?P<listitem>  +[*-] +)?(?P<block><(?:code|file)[^>]*>.+?<\/(?:code|file)>)', replace_block, text, flags=re.DOTALL)
 
     @staticmethod
     def _tr_codeblocks(text: str, lang, codeblk_filename=False, indent='') -> str:
@@ -345,13 +345,18 @@ class DokuWiki2MarkDown:
             lang_type = '' if match.group('lang') is None else match.group('lang')
             lang_type = lang_type if lang is None else lang
             content = match.group('content')
-            content = re.sub(r'^', indent, content, flags=re.MULTILINE)
-            ret = f'```{lang_type}\n{content}\n{indent}```'
+
+            if ('\n' not in content and not (codeblk_filename and match.group('filename')) and not lang_type):
+               ret = f'`{content}`'
+            else:
+                content = re.sub(r'^', indent, content, flags=re.MULTILINE)
+                content = content.removeprefix('\n').rstrip()
+                ret = f'```{lang_type}\n{content}\n{indent}```\n'
             if codeblk_filename and match.group('filename'):
                 ret = f'`{match.group('filename')}`\n\n{ret}'
             return ret
 
-        return re.sub(r'<(?:code|file)(\s+(?P<lang>[^> ]+))?(\s+(?P<filename>[^> ]+))?[^>]*>\n{0,}(?P<content>.*?)\n{0,}</(?:code|file)>', replace_block, text, flags=re.DOTALL)
+        return re.sub(r'<(?:code|file)(\s+(?P<lang>[^> ]+))?(\s+(?P<filename>[^> ]+))?[^>]*>(?P<content>.+?)<\/(?:code|file)>', replace_block, text, flags=re.DOTALL)
 
     @staticmethod
     def _tr_images(text: str, outline=False) -> str:
@@ -387,7 +392,7 @@ class DokuWiki2MarkDown:
                 bullet = '*'
                 # Reset counter when encountering an unordered list item
                 ordered_list_counter = 0
-            DokuWiki2MarkDown.lines[i] = '  '*indentation + bullet + rest
+            DokuWiki2MarkDown.lines[i] = '    '*indentation + bullet + rest
             return (ordered_list_counter, bullet)
 
         ordered_list_counter = 0
@@ -485,6 +490,7 @@ class DokuWiki2MarkDown:
             else:
                 # We are outside a table, reset the flag
                 if in_table:
+                    output_markdown.append('') # newline after a table
                     in_table = False
                 output_markdown.append(line)
 

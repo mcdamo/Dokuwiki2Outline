@@ -97,41 +97,51 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         self.assertEqual('### Headline L3\n\n', self.dtm._tr_headers('==== Headline L3 =====\n'))
 
     def test_code_blocks(self):
-        self.assertEqual('```\ncode text\n```', self.dtm._tr_codeblocks('<code>\ncode text\n</code>', None))
-        self.assertEqual('```\ncode text\n```', self.dtm._tr_codeblocks('<file>\ncode text\n</file>', None))
-        self.assertEqual('```\ncode text\n```', self.dtm._tr_codeblocks('<file>code text</file>', None))
-        self.assertEqual('```\ncode text\n```', self.dtm._tr_codeblocks('<file>\ncode text</file>', None))
-        self.assertEqual('```\ncode text\n```', self.dtm._tr_codeblocks('<file>code text\n</file>', None))
-        self.assertEqual('\n```\ncode text\n```', self.dtm._tr_codeblocks('\n<file>code text\n</file>', None))
+        self.assertEqual('```\ncode text\n```\n', self.dtm._tr_codeblocks('<code>\ncode text\n</code>', None))
+        self.assertEqual('```\ncode text\n```\n', self.dtm._tr_codeblocks('<file>\ncode text\n</file>', None))
+        self.assertEqual('`code text`', self.dtm._tr_codeblocks('<file>code text</file>', None))
+        self.assertEqual('```\ncode text\n```\n', self.dtm._tr_codeblocks('<file>\ncode text</file>', None))
+        self.assertEqual('```\ncode text\n```\n', self.dtm._tr_codeblocks('<file>code text\n</file>', None))
+        self.assertEqual('\n```\ncode text\n```\n', self.dtm._tr_codeblocks('\n<file>code text\n</file>', None))
         # with lang argument
-        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<code>\ncode text\n</code>', 'shell'))
-        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<file>\ncode text\n</file>', 'shell'))
-        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<file>code text</file>', 'shell'))
-        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<file>\ncode text</file>', 'shell'))
-        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<file>code text\n</file>', 'shell'))
-        self.assertEqual('\n```shell\ncode text\n```', self.dtm._tr_codeblocks('\n<file>code text\n</file>', 'shell'))
+        self.assertEqual('```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<code>\ncode text\n</code>', 'shell'))
+        self.assertEqual('```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file>\ncode text\n</file>', 'shell'))
+        self.assertEqual('```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file>code text</file>', 'shell'))
+        self.assertEqual('```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file>\ncode text</file>', 'shell'))
+        self.assertEqual('```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file>code text\n</file>', 'shell'))
+        self.assertEqual('\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('\n<file>code text\n</file>', 'shell'))
         # with provided lang
-        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<code shell>\ncode text\n</code>', None))
-        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<file shell>\ncode text\n</file>', None))
-        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<file shell>code text</file>', None))
-        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<file shell>\ncode text</file>', None))
-        self.assertEqual('```shell\ncode text\n```', self.dtm._tr_codeblocks('<file shell>code text\n</file>', None))
-        self.assertEqual('\n```shell\ncode text\n```', self.dtm._tr_codeblocks('\n<file shell>code text\n</file>', None))
+        self.assertEqual('```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<code shell>\ncode text\n</code>', None))
+        self.assertEqual('```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell>\ncode text\n</file>', None))
+        self.assertEqual('```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell>code text</file>', None))
+        self.assertEqual('```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell>\ncode text</file>', None))
+        self.assertEqual('```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell>code text\n</file>', None))
+        self.assertEqual('\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('\n<file shell>code text\n</file>', None))
         # with provided lang and filename
-        self.assertEqual('`file.txt`\n\n```shell\ncode text\n```', self.dtm._tr_codeblocks('<code shell file.txt>\ncode text\n</code>', None, True))
-        self.assertEqual('`file.txt`\n\n```shell\ncode text\n```', self.dtm._tr_codeblocks('<file shell file.txt>\ncode text\n</file>', None, True))
-        self.assertEqual('`file.txt`\n\n```shell\ncode text\n```', self.dtm._tr_codeblocks('<file shell file.txt>code text</file>', None, True))
-        self.assertEqual('`file.txt`\n\n```shell\ncode text\n```', self.dtm._tr_codeblocks('<file shell file.txt>\ncode text</file>', None, True))
-        self.assertEqual('`file.txt`\n\n```shell\ncode text\n```', self.dtm._tr_codeblocks('<file shell file.txt>code text\n</file>', None, True))
-        self.assertEqual('\n`file.txt`\n\n```shell\ncode text\n```', self.dtm._tr_codeblocks('\n<file shell file.txt>code text\n</file>', None, True))
+        self.assertEqual('`file.txt`\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<code shell file.txt>\ncode text\n</code>', None, True))
+        self.assertEqual('`file.txt`\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell file.txt>\ncode text\n</file>', None, True))
+        self.assertEqual('`file.txt`\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell file.txt>code text</file>', None, True))
+        self.assertEqual('`file.txt`\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell file.txt>\ncode text</file>', None, True))
+        self.assertEqual('`file.txt`\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('<file shell file.txt>code text\n</file>', None, True))
+        self.assertEqual('\n`file.txt`\n\n```shell\ncode text\n```\n', self.dtm._tr_codeblocks('\n<file shell file.txt>code text\n</file>', None, True))
         # do not apply any conversions inside code blocks
         self.assertEqual('```\n[[:not-a-link:]]\n//not-italic//\n```\n', self.dtm._dokuwiki_to_markdown('<code>[[:not-a-link:]]\n//not-italic//\n</code>', None, None))
+        #  code block without newlines should be treated as inline code
+        self.assertEqual('`code text`', self.dtm._dokuwiki_to_markdown('<code>code text</code>', None, None))
         # code blocks nested in lists should be indented to the same level
-        self.assertEqual('* ```\n  code\n  text\n  ```\n\n', self.dtm._dokuwiki_to_markdown('  * <code>code\ntext\n</code>', None, None))
-        self.assertEqual('  * ```\n    code\n    text\n    ```\n\n', self.dtm._dokuwiki_to_markdown('    * <code>code\ntext\n</code>', None, None))
+        self.assertEqual('* `code text`',
+            self.dtm._dokuwiki_to_markdown('  * <code>code text</code>', None, None), "code block nested in list #1")
+        self.assertEqual('* text `code text`',
+            self.dtm._dokuwiki_to_markdown('  * text <code>code text</code>', None, None), "code block nested in list #2")
+        self.assertEqual('* ```\n  code\n  text\n  ```\n',
+            self.dtm._dokuwiki_to_markdown('  * <code>code\ntext\n</code>', None, None), "code block nested in list #3")
+        self.assertEqual('    * ```\n    code\n    text\n    ```\n',
+            self.dtm._dokuwiki_to_markdown('    * <code>code\ntext\n</code>', None, None), "code block nested in list #4")
         # works with indented code blocks
-        self.assertEqual('```\ncode\ntext\n```\n', self.dtm._dokuwiki_to_markdown('  code\n  text\n', None, None))
-        self.assertEqual('```shell\ncode\ntext\n```\n', self.dtm._dokuwiki_to_markdown('  code\n  text\n', 'shell', None))
+        self.assertEqual('```\ncode\ntext\n```\n',
+            self.dtm._dokuwiki_to_markdown('  code\n  text\n', None, None))
+        self.assertEqual('```shell\ncode\ntext\n```\n',
+            self.dtm._dokuwiki_to_markdown('  code\n  text\n', 'shell', None))
 
 
     def test_images(self):
@@ -160,6 +170,7 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         | Row 1 Col 1    | Row 1 Col 2     | Row 1 Col 3        |
         | Row 2 Col 1    | some colspan (note the double pipe) ||
         | Row 3 Col 1    | Row 3 Col 2     | Row 3 Col 3        |
+        This is not part of the table
         """)
         md = dedent("""\
         | Heading 1      | Heading 2       | Heading 3          |
@@ -167,17 +178,33 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         | Row 1 Col 1    | Row 1 Col 2     | Row 1 Col 3        |
         | Row 2 Col 1    | some colspan (note the double pipe) | |
         | Row 3 Col 1    | Row 3 Col 2     | Row 3 Col 3        |
+
+        This is not part of the table
         """)
         self.assertEqual(self.dtm._tr_tables(dw), md)
 
     def test_lists(self):
         self.assertEqual('* Unordered item', self.dtm._tr_lists('  * Unordered item'))
         self.assertEqual('1. Ordered item', self.dtm._tr_lists('  - Ordered item'))
-        self.assertEqual('  * Nested unordered item', self.dtm._tr_lists('    * Nested unordered item'))
-        self.assertEqual('  1. Nested ordered item', self.dtm._tr_lists('    - Nested ordered item'))
+        self.assertEqual('    * Nested unordered item', self.dtm._tr_lists('    * Nested unordered item'))
+        self.assertEqual('    1. Nested ordered item', self.dtm._tr_lists('    - Nested ordered item'))
         self.assertEqual('----', self.dtm._tr_lists('----')) # avoid horizontal rule
-        self.assertEqual('* Unordered item\n  * Nested unordered item\n    * Subnested unordered item', self.dtm._tr_lists('  * Unordered item\n    * Nested unordered item\n      * Subnested unordered item'))
-        self.assertEqual('1. Ordered item\n  1. Nested ordered item\n    1. Subnested ordered item\n  2. Nested ordered item 2\n2. Ordered item 2', self.dtm._tr_lists('  - Ordered item\n    - Nested ordered item\n      - Subnested ordered item\n    - Nested ordered item 2\n  - Ordered item 2'))
+        self.assertEqual("""* Unordered item
+    * Nested unordered item
+        * Subnested unordered item""",
+            self.dtm._tr_lists("""  * Unordered item
+    * Nested unordered item
+      * Subnested unordered item"""))
+        self.assertEqual("""1. Ordered item
+    1. Nested ordered item
+        1. Subnested ordered item
+    2. Nested ordered item 2
+2. Ordered item 2""",
+            self.dtm._tr_lists("""  - Ordered item
+    - Nested ordered item
+      - Subnested ordered item
+    - Nested ordered item 2
+  - Ordered item 2"""))
 
     def test_newlines(self):
         self.assertEqual('\n', self.dtm._rm_newlines('\n'))
