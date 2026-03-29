@@ -1,31 +1,43 @@
 # Formatting Syntax
 
-[doku>DokuWiki](doku>DokuWiki) supports some simple markup language, which tries to make the datafiles to be as readable as possible. This page contains all possible syntax you may use when editing the pages. Simply have a look at the source of this page by pressing "Edit this page". If you want to try something, just use the [playground](playground:playground) page. The simpler markup is easily accessible via [quickbuttons](doku>toolbar), too.
+<doku>DokuWiki> supports some simple markup language, which tries to make the datafiles to be as readable as possible. This page contains all possible syntax you may use when editing the pages. Simply have a look at the source of this page by pressing "Edit this page". If you want to try something, just use the [playground](playground:playground) page. The simpler markup is easily accessible via [quickbuttons](doku>toolbar), too.
 
 ## Basic Text Formatting
 
 DokuWiki supports **bold**, *italic*, **underlined** and `monospaced` texts. Of course you can *****`combine`***** all these.
 
-DokuWiki supports **bold**, *italic*, **underlined** and `monospaced` texts.
-  Of course you can *****`combine`***** all these.
+```
+DokuWiki supports **bold**, //italic//, __underlined__ and ''monospaced'' texts.
+Of course you can **__//''combine''//__** all these.
+```
+
 
 You can use <sub>subscript</sub> and <sup>superscript</sup>, too.
 
+```
 You can use <sub>subscript</sub> and <sup>superscript</sup>, too.
+```
+
 
 You can mark something as ~~deleted~~ as well.
 
-You can mark something as ~~deleted~~ as well.
+```
+You can mark something as <a426289c1237fb3b963b0c0a4458b838:strike:39258571-48cc-4734-8235-7867a1f4279d> as well.
+```
+
 
 **Paragraphs** are created from blank lines. If you want to **force a newline** without a paragraph, you can use two backslashes followed by a whitespace or the end of line.
 
-This is some text with some linebreaks\\ Note that the
-two backslashes are only recognized at the end of a line  
-or followed by\\ a whitespace \\this happens without it.
+This is some text with some linebreaks\\\\ Note that the
+two backslashes are only recognized at the end of a line\\  
+or followed by\\\\ a whitespace \\\\this happens without it.
 
+```
 This is some text with some linebreaks\\ Note that the
-  two backslashes are only recognized at the end of a line  
-  or followed by\\ a whitespace \\this happens without it.
+two backslashes are only recognized at the end of a line\\
+or followed by\\ a whitespace \\this happens without it.
+```
+
 
 You should use forced newlines only if really needed.
 
@@ -35,72 +47,93 @@ DokuWiki supports multiple ways of creating links.
 
 ### External
 
-External links are recognized automagically: http://www.google.com or simply www.google.com - You can set the link text as well: [This Link points to google](http://www.google.com). Email addresses like this one: <andi@splitbrain.org> are recognized, too.
+External links are recognized automagically: <http://www.google.com> or simply www.google.com - You can set the link text as well: [This Link points to google](http://www.google.com). Email addresses like this one: <andi@splitbrain.org> are recognized, too.
 
+```
 DokuWiki supports multiple ways of creating links. External links are recognized
-  automagically: http://www.google.com or simply www.google.com - You can set
-  link text as well: [This Link points to google](http://www.google.com). Email
-  addresses like this one: <andi@splitbrain.org> are recognized, too.
+automagically: http://www.google.com or simply www.google.com - You can set
+link text as well: [[http://www.google.com|This Link points to google]]. Email
+addresses like this one: <andi@splitbrain.org> are recognized, too.
+```
+
 
 ### Internal
 
-Internal links are created by using square brackets. You can either just give a [pagename](pagename) or use an additional [link text](pagename).
+Internal links are created by using square brackets. You can either just give a <pagename> or use an additional [link text](pagename).
 
+```
 Internal links are created by using square brackets. You can either just give
-  a [pagename](pagename) or use an additional [link text](pagename).
+a [[pagename]] or use an additional [[pagename|link text]].
+```
+
 
 [Wiki pagenames](doku>pagename) are converted to lowercase automatically, special characters are not allowed.
 
-You can use [some:namespaces](some:namespaces) by using a colon in the pagename.
+You can use <some:namespaces> by using a colon in the pagename.
 
-You can use [some:namespaces](some:namespaces) by using a colon in the pagename.
+```
+You can use [[some:namespaces]] by using a colon in the pagename.
+```
 
-For details about namespaces see [doku>namespaces](doku>namespaces).
+
+For details about namespaces see <doku>namespaces>.
 
 Linking to a specific section is possible, too. Just add the section name behind a hash character as known from HTML. This links to [this Section](syntax#internal).
 
-This links to [this Section](syntax#internal).
+```
+This links to [[syntax#internal|this Section]].
+```
+
 
 Notes:
 
-* Links to [existing pages](syntax) are shown in a different style from [nonexisting](nonexisting) ones.
-* DokuWiki does not use [wp>CamelCase](wp>CamelCase) to automatically create links by default, but this behavior can be enabled in the [doku>config](doku>config) file. Hint: If DokuWiki is a link, then it's enabled.
+* Links to [existing pages](syntax) are shown in a different style from <nonexisting> ones.
+* DokuWiki does not use <wp>CamelCase> to automatically create links by default, but this behavior can be enabled in the <doku>config> file. Hint: If DokuWiki is a link, then it's enabled.
 * When a section's heading is changed, its bookmark changes, too. So don't rely on section linking too much.
 
 ### Interwiki
 
-DokuWiki supports [doku>Interwiki](doku>Interwiki) links. These are quick links to other Wikis. For example this is a link to Wikipedia's page about Wikis: [wp>Wiki](wp>Wiki).
+DokuWiki supports <doku>Interwiki> links. These are quick links to other Wikis. For example this is a link to Wikipedia's page about Wikis: <wp>Wiki>.
 
-DokuWiki supports [doku>Interwiki](doku>Interwiki) links. These are quick links to other Wikis.
-  For example this is a link to Wikipedia's page about Wikis: [wp>Wiki](wp>Wiki).
+```
+DokuWiki supports [[doku>Interwiki]] links. These are quick links to other Wikis.
+For example this is a link to Wikipedia's page about Wikis: [[wp>Wiki]].
+```
+
 
 ### Windows Shares
 
-Windows shares like [this](\\server\share) are recognized, too. Please note that these only make sense in a homogeneous user group like a corporate [wp>Intranet](wp>Intranet).
+Windows shares like [this](\\server\share) are recognized, too. Please note that these only make sense in a homogeneous user group like a corporate <wp>Intranet>.
 
-Windows Shares like [this](\\server\share) are recognized, too.
+```
+Windows Shares like [[\\server\share|this]] are recognized, too.
+```
+
 
 Notes:
 
 * For security reasons direct browsing of windows shares only works in Microsoft Internet Explorer per default (and only in the "local zone").
 * For Mozilla and Firefox it can be enabled through different workaround mentioned in the [Mozilla Knowledge Base](http://kb.mozillazine.org/Links_to_local_pages_do_not_work). However, there will still be a JavaScript warning about trying to open a Windows Share. To remove this warning (for all users), put the following line in `conf/lang/en/lang.php` (more details at [localization](doku>localization#changing_some_localized_texts_and_strings_in_your_installation)):
-
-```
-<?php
-/**
-* Customization of the english language file
-* Copy only the strings that needs to be modified
-*/
-$lang['js']['nosmblinks'] = '';
-```
+  ```-
+  
+  <?php
+  /**
+   * Customization of the english language file
+   * Copy only the strings that needs to be modified
+   */
+  $lang['js']['nosmblinks'] = '';
+  ```
 
 ### Image Links
 
 You can also use an image to link to another internal or external page by combining the syntax for links and [images](#images_and_other_files) (see below) like this:
 
-[![](wiki:dokuwiki-128.png)](http://php.net)
+```
+[[http://php.net|{{wiki:dokuwiki-128.png}}]]
+```
 
-[![](wiki:dokuwiki-128.png)](http://php.net)
+
+[{{wiki:dokuwiki-128.png}}](http://php.net)
 
 Please note: The image formatting is the only formatting syntax accepted in link names.
 
@@ -112,13 +145,14 @@ You can add footnotes [^1]
 
 [^1]: This is a footnote by using double parentheses.
 
-You can add footnotes [^1]
+```
+You can add footnotes ((This is a footnote)) by using double parentheses.
+```
 
-[^1]: This is a footnote by using double parentheses.
 
 ## Sectioning
 
-You can use up to five different levels of headlines to structure your content. If you have more than three headlines, a table of contents is generated automatically -- this can be disabled by including the string `<nowiki>~~NOTOC~~</nowiki>` in the document.
+You can use up to five different levels of headlines to structure your content. If you have more than three headlines, a table of contents is generated automatically -- this can be disabled by including the string `~~NOTOC~~` in the document.
 
 ### Headline Level 3
 
@@ -126,11 +160,12 @@ You can use up to five different levels of headlines to structure your content. 
 
 ##### Headline Level 5
 
-### Headline Level 3
+```
+==== Headline Level 3 ====
+=== Headline Level 4 ===
+== Headline Level 5 ==
+```
 
-#### Headline Level 4
-
-##### Headline Level 5
 
 By using four or more dashes, you can make a horizontal line:
 
@@ -140,40 +175,49 @@ By using four or more dashes, you can make a horizontal line:
 
 You can include external and internal [images, videos and audio files](doku>images) with curly brackets. Optionally you can specify the size of them.
 
-Real size:                        ![](wiki:dokuwiki-128.png)
+Real size:                        ![None](wiki/dokuwiki-128.png)
 
-Resize to given width:            ![](wiki:dokuwiki-128.png?50)
+Resize to given width:            ![None](wiki/dokuwiki-128.png?50)
 
 Resize to given width and height[^1]
 
-[^1]: when the aspect ratio of the given width and height doesn't match that of the image, it will be cropped to the new ratio before resizing: ![](wiki:dokuwiki-128.png?200x50)
+[^1]: when the aspect ratio of the given width and height doesn't match that of the image, it will be cropped to the new ratio before resizing: ![None](wiki/dokuwiki-128.png?200x50)
 
-Resized external image:           ![](https://secure.php.net/images/php.gif?200x50)
+Resized external image:           {{<https://secure.php.net/images/php.gif?200x50}}>
 
-Real size:                        ![](wiki:dokuwiki-128.png)
-  Resize to given width:            ![](wiki:dokuwiki-128.png?50)
-  Resize to given width and height: ![](wiki:dokuwiki-128.png?200x50)
-  Resized external image:           ![](https://secure.php.net/images/php.gif?200x50)
+```
+Real size:                        {{wiki:dokuwiki-128.png}}
+Resize to given width:            {{wiki:dokuwiki-128.png?50}}
+Resize to given width and height: {{wiki:dokuwiki-128.png?200x50}}
+Resized external image:           {{https://secure.php.net/images/php.gif?200x50}}
+```
+
 
 By using left or right whitespaces you can choose the alignment.
 
-![]( wiki:dokuwiki-128.png)
+![None](wiki/dokuwiki-128.png)
 
-![](wiki:dokuwiki-128.png )
+![None](wiki/dokuwiki-128.png)
 
-![]( wiki:dokuwiki-128.png )
+![None](wiki/dokuwiki-128.png)
 
-![]( wiki:dokuwiki-128.png)
-  ![](wiki:dokuwiki-128.png )
-  ![]( wiki:dokuwiki-128.png )
+```
+{{ wiki:dokuwiki-128.png}}
+{{wiki:dokuwiki-128.png }}
+{{ wiki:dokuwiki-128.png }}
+```
+
 
 Of course, you can add a title (displayed as a tooltip by most browsers), too.
 
-![This is the caption]( wiki:dokuwiki-128.png )
+![This is the caption](wiki/dokuwiki-128.png)
 
-![This is the caption]( wiki:dokuwiki-128.png )
+```
+{{ wiki:dokuwiki-128.png |This is the caption}}
+```
 
-For linking an image to another page see [#Image Links](#Image Links) above.
+
+For linking an image to another page see <#Image Links> above.
 
 ### Supported Media Formats
 
@@ -189,9 +233,12 @@ If you specify a filename that is not a supported media format, then it will be 
 
 By adding `?linkonly` you provide a link to the media without displaying it inline
 
-![](wiki:dokuwiki-128.png?linkonly)
+```
+{{wiki:dokuwiki-128.png?linkonly}}
+```
 
-![](wiki:dokuwiki-128.png?linkonly) This is just a link to the image.
+
+![None](wiki/dokuwiki-128.png?linkonly) This is just a link to the image.
 
 ### Fallback Formats
 
@@ -199,7 +246,10 @@ Unfortunately not all browsers understand all video and audio formats. To mitiga
 
 For example consider this embedded mp4 video:
 
-![A funny video](video.mp4)
+```
+{{video.mp4|A funny video}}
+```
+
 
 When you upload a `video.webm` and `video.ogv` next to the referenced `video.mp4`, DokuWiki will automatically add them as alternatives so that one of the three files is understood by your browser.
 
@@ -211,24 +261,24 @@ Dokuwiki supports ordered and unordered lists. To create a list item, indent you
 
 * This is a list
 * The second item
-  * You may have different levels
+    * You may have different levels
 * Another item
 
 1. The same list but ordered
 2. Another item
-  3. Just use indention for deeper levels
-4. That's it
+    1. Just use indention for deeper levels
+3. That's it
 
 ```
-* This is a list
-* The second item
-  * You may have different levels
-* Another item
+  * This is a list
+  * The second item
+    * You may have different levels
+  * Another item
 
-1. The same list but ordered
-2. Another item
-  3. Just use indention for deeper levels
-4. That's it
+  - The same list but ordered
+  - Another item
+    - Just use indention for deeper levels
+  - That's it
 ```
 
 Also take a look at the [FAQ on list items](doku>faq:lists).
@@ -241,39 +291,39 @@ The text to image conversion is mainly done for smileys. And the text to HTML co
 
 ### Text to Image Conversions
 
-DokuWiki converts commonly used [wp>emoticon](wp>emoticon)s to their graphical equivalents. Those [doku>Smileys](doku>Smileys) and other images can be configured and extended. Here is an overview of Smileys included in DokuWiki:
+DokuWiki converts commonly used <wp>emoticon>s to their graphical equivalents. Those <doku>Smileys> and other images can be configured and extended. Here is an overview of Smileys included in DokuWiki:
 
-* 8-) %%  8-)  %%
-* 8-O %%  8-O  %%
-* :-( %%  :-(  %%
-* :-) %%  :-)  %%
-* =)  %%  =)   %%
-* :-/ %%  :-/  %%
-* :-\ %%  :-\  %%
-* :-? %%  :-?  %%
-* :-D %%  :-D  %%
-* :-P %%  :-P  %%
-* :-O %%  :-O  %%
-* :-X %%  :-X  %%
-* :-| %%  :-|  %%
-* ;-) %%  ;-)  %%
-* ^_^ %%  ^_^  %%
-* m(  %%  m(   %%
-* :?: %%  :?:  %%
-* :!: %%  :!:  %%
-* LOL %%  LOL  %%
-* FIXME %%  FIXME %%
-* DELETEME %% DELETEME %%
+* 8-)   8-)  
+* 8-O   8-O  
+* :-(   :-(  
+* :-)   :-)  
+* =)    =)   
+* :-/   :-/  
+* :-\\   :-\\  
+* :-?   :-?  
+* :-D   :-D  
+* :-P   :-P  
+* :-O   :-O  
+* :-X   :-X  
+* :-|   :-|  
+* ;-)   ;-)  
+* ^_^   ^_^  
+* m(    m(   
+* :?:   :?:  
+* :!:   :!:  
+* LOL   LOL  
+* FIXME   FIXME 
+* DELETEME  DELETEME 
 
 ### Text to HTML Conversions
 
-Typography: [DokuWiki](DokuWiki) can convert simple text characters to their typographically correct entities. Here is an example of recognized characters.
+Typography: <DokuWiki> can convert simple text characters to their typographically correct entities. Here is an example of recognized characters.
 
-1.> <- <-> => <= <=> >> << -- --- 640x480 (c) (tm) (r)
+-> <- <-> => <= <=> >> << -- --- 640x480 (c) (tm) (r)
 "He thought 'It's a man's world'..."
 
 ```
-2.> <- <-> => <= <=> >> << -- --- 640x480 (c) (tm) (r)
+-> <- <-> => <= <=> >> << -- --- 640x480 (c) (tm) (r)
 "He thought 'It's a man's world'..."
 ```
 
@@ -323,10 +373,13 @@ DokuWiki supports a simple syntax to create tables.
 
 Table rows have to start and end with a `|` for normal rows or a `^` for headers.
 
-| Heading 1      | Heading 2       | Heading 3          |
+```
+^ Heading 1      ^ Heading 2       ^ Heading 3          ^
 | Row 1 Col 1    | Row 1 Col 2     | Row 1 Col 3        |
-| Row 2 Col 1    | some colspan (note the double pipe) | |
+| Row 2 Col 1    | some colspan (note the double pipe) ||
 | Row 3 Col 1    | Row 3 Col 2     | Row 3 Col 3        |
+```
+
 
 To connect cells horizontally, just make the next cell completely empty as shown above. Be sure to have always the same amount of cell separators!
 
@@ -340,12 +393,15 @@ Vertical tableheaders are possible, too.
 
 As you can see, it's the cell separator before a cell which decides about the formatting:
 
-|              | Heading 1            | Heading 2          |
-| Heading 3    | Row 1 Col 2          | Row 1 Col 3        |
-| Heading 4    | no colspan this time |                    |
-| Heading 5    | Row 2 Col 2          | Row 2 Col 3        |
+```
+|              ^ Heading 1            ^ Heading 2          ^
+^ Heading 3    | Row 1 Col 2          | Row 1 Col 3        |
+^ Heading 4    | no colspan this time |                    |
+^ Heading 5    | Row 2 Col 2          | Row 2 Col 3        |
+```
 
-You can have rowspans (vertically connected cells) by adding `%%:::%%` into the cells below the one to which they should connect.
+
+You can have rowspans (vertically connected cells) by adding `:::` into the cells below the one to which they should connect.
 
 | Heading 1      | Heading 2                  | Heading 3          |
 |  --- | --- | --- |
@@ -355,10 +411,13 @@ You can have rowspans (vertically connected cells) by adding `%%:::%%` into the 
 
 Apart from the rowspan syntax those cells should not contain anything else.
 
-| Heading 1      | Heading 2                  | Heading 3          |
+```
+^ Heading 1      ^ Heading 2                  ^ Heading 3          ^
 | Row 1 Col 1    | this cell spans vertically | Row 1 Col 3        |
-| Row 2 Col 1    |                         | Row 2 Col 3        |
-| Row 3 Col 1    |                         | Row 2 Col 3        |
+| Row 2 Col 1    | :::                        | Row 2 Col 3        |
+| Row 3 Col 1    | :::                        | Row 2 Col 3        |
+```
+
 
 You can align the table contents, too. Just add at least two whitespaces at the opposite end of your text: Add two spaces on the left to align right, two spaces on the right to align left and two spaces at least at both ends for centered text.
 
@@ -370,37 +429,43 @@ You can align the table contents, too. Just add at least two whitespaces at the 
 
 This is how it looks in the source:
 
-|           Table with alignment           | ||
+```
+^           Table with alignment           ^^^
 |         right|    center    |left          |
 |left          |         right|    center    |
 | xxxxxxxxxxxx | xxxxxxxxxxxx | xxxxxxxxxxxx |
+```
+
 
 Note: Vertical alignment is not supported.
 
 ## No Formatting
 
-If you need to display text exactly like it is typed (without any formatting), enclose the area either with `%%<nowiki>%%` tags or even simpler, with double percent signs `<nowiki>%%</nowiki>`.
+If you need to display text exactly like it is typed (without any formatting), enclose the area either with `<nowiki>` tags or even simpler, with double percent signs `%%`.
 
+<nowiki>
+This is some text which contains addresses like this: <http://www.splitbrain.org> and **formatting**, but nothing is done with it.
+</nowiki>
+The same is true for ***this** text* with a smiley ;-).
+
+```
 <nowiki>
 This is some text which contains addresses like this: http://www.splitbrain.org and **formatting**, but nothing is done with it.
 </nowiki>
-The same is true for %%***this** text* with a smiley ;-)%%.
+The same is true for %%//__this__ text// with a smiley ;-)%%.
+```
 
-<nowiki>
-  This is some text which contains addresses like this: http://www.splitbrain.org and **formatting**, but nothing is done with it.
-  </nowiki>
-  The same is true for %%***this** text* with a smiley ;-)%%.
 
 ## Code Blocks
 
-You can include code blocks into your documents by either indenting them by at least two spaces (like used for the previous examples) or by using the tags ''%%
+You can include code blocks into your documents by either indenting them by at least two spaces (like used for the previous examples) or by using the tags `<code>` or `<file>`.
 
 ```
-%%` or `%%<file>%%''.
-
 This is text is indented by two spaces.
+```
 
-<code>
+
+```
 This is preformatted code all spaces are preserved: like              <-this
 ```
 
@@ -410,30 +475,34 @@ This is pretty much the same, but you could use it to show that you quoted a fil
 
 Those blocks were created by this source:
 
-This is text is indented by two spaces.
-
 ```
-  This is preformatted code all spaces are preserved: like              <-this
-
+  This is text is indented by two spaces.
 ```
 
-```
-  This is pretty much the same, but you could use it to show that you quoted a file.
 
 ```
+<code>
+This is preformatted code all spaces are preserved: like              <-this
+</code>
+```
+
+
+```
+<file>
+This is pretty much the same, but you could use it to show that you quoted a file.
+</file>
+```
+
 
 ### Syntax Highlighting
 
-[wiki:DokuWiki](wiki:DokuWiki) can highlight sourcecode, which makes it easier to read. It uses the [GeSHi](http://qbnz.com/highlighter/) Generic Syntax Highlighter -- so any language supported by GeSHi is supported. The syntax uses the same code and file blocks described in the previous section, but this time the name of the language syntax to be highlighted is included inside the tag, e.g. ''<nowiki>
+<wiki:DokuWiki> can highlight sourcecode, which makes it easier to read. It uses the [GeSHi](http://qbnz.com/highlighter/) Generic Syntax Highlighter -- so any language supported by GeSHi is supported. The syntax uses the same code and file blocks described in the previous section, but this time the name of the language syntax to be highlighted is included inside the tag, e.g. `<code java>` or `<file java>`.
 
-```
-</nowiki>` or `<nowiki><file java></nowiki>''.
-
-<code java>
+```java
 /**
-* The HelloWorldApp class implements an application that
-* simply displays "Hello World!" to the standard output.
-*/
+ * The HelloWorldApp class implements an application that
+ * simply displays "Hello World!" to the standard output.
+ */
 class HelloWorldApp {
     public static void main(String[] args) {
         System.out.println("Hello World!"); //Display the string.
@@ -447,27 +516,23 @@ There are additional [advanced options](doku>syntax_highlighting) available for 
 
 ### Downloadable Code Blocks
 
-When you use the ''%%
+When you use the `<code>` or `<file>` syntax as above, you might want to make the shown code available for download as well. You can do this by specifying a file name after language code like this:
 
 ```
-%%` or `%%<file>%%'' syntax as above, you might want to make the shown code available for download as well. You can do this by specifying a file name after language code like this:
-
-<code>
 <file php myexample.php>
 <?php echo "hello world!"; ?>
 ```
-
 </code>
 
-```
+```php
 <?php echo "hello world!"; ?>
 ```
 
-If you don't want any highlighting but want a downloadable file, specify a dash (`-`) as the language code: `%%<code - myfile.foo>%%`.
+If you don't want any highlighting but want a downloadable file, specify a dash (`-`) as the language code: `<code - myfile.foo>`.
 
 ## RSS/ATOM Feed Aggregation
 
-[DokuWiki](DokuWiki) can integrate data from external XML feeds. For parsing the XML feeds, [SimplePie](http://simplepie.org/) is used. All formats understood by SimplePie can be used in DokuWiki as well. You can influence the rendering by multiple additional space separated parameters:
+<DokuWiki> can integrate data from external XML feeds. For parsing the XML feeds, [SimplePie](http://simplepie.org/) is used. All formats understood by SimplePie can be used in DokuWiki as well. You can influence the rendering by multiple additional space separated parameters:
 
 | Parameter  | Description |
 |  --- | --- |
@@ -479,15 +544,18 @@ If you don't want any highlighting but want a downloadable file, specify a dash 
 | nosort     | do not sort the items in the feed |
 | *n*[dhm] | refresh period, where d=days, h=hours, m=minutes. (e.g. 12h = 12 hours). |
 
-The refresh period defaults to 4 hours. Any value below 10 minutes will be treated as 10 minutes. [wiki:DokuWiki](wiki:DokuWiki) will generally try to supply a cached version of a page, obviously this is inappropriate when the page contains dynamic external content. The parameter tells [wiki:DokuWiki](wiki:DokuWiki) to re-render the page if it is more than *refresh period* since the page was last rendered.
+The refresh period defaults to 4 hours. Any value below 10 minutes will be treated as 10 minutes. <wiki:DokuWiki> will generally try to supply a cached version of a page, obviously this is inappropriate when the page contains dynamic external content. The parameter tells <wiki:DokuWiki> to re-render the page if it is more than *refresh period* since the page was last rendered.
 
 By default the feed will be sorted by date, newest items first. You can sort it by oldest first using the `reverse` parameter, or display the feed as is with `nosort`.
 
 **Example:**
 
-![](rss>http://slashdot.org/index.rss 5 author date 1h )
+```
+{{rss>http://slashdot.org/index.rss 5 author date 1h }}
+```
 
-![](rss>http://slashdot.org/index.rss 5 author date 1h )
+
+![None](rss>http///slashdot.org/index.rss 5 author date 1h)
 
 ## Control Macros
 
@@ -495,8 +563,8 @@ Some syntax influences how DokuWiki renders a page without creating any output i
 
 | Macro           | Description |
 |  --- | --- |
-| %%~~NOTOC~~%%   | If this macro is found on the page, no table of contents will be created |
-| %%~~NOCACHE~~%% | DokuWiki caches all output by default. Sometimes this might not be wanted (eg. when the %%<php>%% syntax above is used), adding this macro will force DokuWiki to rerender a page on every call |
+| ~~NOTOC~~   | If this macro is found on the page, no table of contents will be created |
+| ~~NOCACHE~~ | DokuWiki caches all output by default. Sometimes this might not be wanted (eg. when the <php> syntax above is used), adding this macro will force DokuWiki to rerender a page on every call |
 
 ## Syntax Plugins
 
