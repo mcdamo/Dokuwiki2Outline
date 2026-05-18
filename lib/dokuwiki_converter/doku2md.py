@@ -209,7 +209,7 @@ class Dokuwiki2Markdown:
             unique_id = self._store_link(link)
             return unique_id
 
-        return re.sub(r'(\[\[[^|\]]+(\|([^]]+)?)?\]\])', replace_link, text, flags=re.DOTALL)
+        return re.sub(r'(\[\[[^|]+(\|(.*?))?\]\])', replace_link, text, flags=re.DOTALL)
 
     def _tr_links(self, text: str, outline=None, dirpath=None, page_moved=None, extract=False) -> str:
         outline = self.outline if outline is None else outline
@@ -221,11 +221,20 @@ class Dokuwiki2Markdown:
             title = match.group('title')
             link = ''
 
+            def clean_url(url):
+                # escape parentheses to prevent markdown parsing them as link delimiters
+                chars = [('(', '%28'), (')', '%29')]
+                for char in chars:
+                    url = url.replace(char[0], char[1])
+                return url
+
             def clean_title(title):
                 # strip newlines from title
                 title = re.sub(r'[\s]+', ' ', title.strip())
                 # escape special characters
-                title = re.sub(r'\$', r'\$', title)
+                chars = ['$', '[', ']']
+                for char in chars:
+                    title = title.replace(char, '\\' + char)
                 return title
 
             def fix_internal_link(url):
@@ -310,6 +319,7 @@ class Dokuwiki2Markdown:
                     unique_id = self._store_mention((url, title, text))
                     return unique_id
 
+            url = clean_url(url)
             if title:
                 title = clean_title(title)
                 link = f'[{title}]({url})'
@@ -320,7 +330,7 @@ class Dokuwiki2Markdown:
                 return unique_id
             return link
 
-        return re.sub(r'\[\[(?P<url>[^|\]]*?)(\|(?P<title>[^\]]+)?)?\]\]', replace_link, text, flags=re.DOTALL)
+        return re.sub(r'\[\[(?P<url>[^|]*?)(\|(?P<title>.*?)?)?\]\]', replace_link, text, flags=re.DOTALL)
 
     def _extract_rawlinks(self, text: str) -> str:
         def replace_link(match):
@@ -500,8 +510,12 @@ class Dokuwiki2Markdown:
                     (ordered_list_counter, bullet) = process_line(i, match, ordered_list_counter)
             else:
                 if in_list == True:
-                    # add an extra newline after the end of a list
+                    # add an extra newline *after* the end of a list
                     self.lines[i] += '\n'
+                    if self.lines[i][0:2] != '  ':
+                        # also add an extra newline *at* the end of a list,
+                        # but only if the next line isn't indented
+                        self.lines[i-1] += '\n'
                 return (None, None)
 
             (i, line) = self._tr_lists_line()

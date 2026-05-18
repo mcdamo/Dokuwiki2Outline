@@ -51,6 +51,8 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         self.assertEqual('<https://example.com//two//slashes>', self.dtm._tr_links('[[https://example.com//two//slashes]]', outline=True))
         # newline in link title
         self.assertEqual('[Example title](https://example.com)', self.dtm._tr_links('[[https://example.com|\nExample\ntitle\n]]', outline=True))
+        self.assertEqual('[\\[Brackets\\] in title](https://example.com)', self.dtm._tr_links('[[https://example.com|[Brackets] in title]]', outline=True))
+        self.assertEqual('[Parentheses in URL](https://example.com/%28escaped%29)', self.dtm._tr_links('[[https://example.com/(escaped)|Parentheses in URL]]', outline=True))
 
     def test_internal_links_special(self):
         # relative links without a page name are tricky, needs to know the current pages path
@@ -279,6 +281,13 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
       - Subnested ordered item
     - Nested ordered item 2
   - Ordered item 2"""))
+        self.assertEqual("""* Unordered item
+
+Non-list text
+
+* Unordered item 2""", self.dtm._tr_lists("""  * Unordered item
+Non-list text
+  * Unordered item 2""")) # adds an extra newline after the end of a list
 
     def test_newlines(self):
         self.assertEqual('\n', self.dtm._rm_newlines('\n'))
