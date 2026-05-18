@@ -155,7 +155,7 @@ class OutlineImporter:
 
         if document.doc_id:
             return self.api_server.update_document(document.doc_id, document, text_md)
-        return self.api_server.create_document(document, text_md, empty_page=empty_page)
+        return self.api_server.create_document(document, text_md)
 
     def _recursive_lookup(self, collection, dcs):
         for name, doc in collection.documents.items():
@@ -202,7 +202,7 @@ class OutlineImporter:
                 mm2[k] = (f'`LINK:{_url}`', _title)
             else:
                 self.document_links_all.append((document.path, _orig_url, _url))
-                mm2[k] = ('<mention:'+_doc_id+'>', _title)
+                mm2[k] = ('@<mention://document/'+_doc_id+'>', _title)
         text_md = self.doku2md.restore_mentions(text_md, mm2)
 
         return text_md

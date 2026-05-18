@@ -15,6 +15,10 @@ There are two components to this library that can be run independently:
 
 Python3 and dependencies listed in [requirements.txt](requirements.txt). These may be installed and run from a venv.
 
+Outline >= v1.7.0 for importing internal links as mentions
+
+Custom Outline dev build to import revisions (read _Import revisions_ section below)
+
 ## DokuwikiConverter
 
 This can be used to transform a DokuWiki site to Markdown.
@@ -155,6 +159,9 @@ Importing revisions is not natively supported in Outline, bulk document updates 
 
 To support importing revisions you must run custom code branch for the import. Once it is imported you can switch back to production branch.
 
+- [Feature request](https://github.com/outline/outline/discussions/11892)
+- [Pull request](https://github.com/outline/outline/pull/11893)
+
 You will need both the `pages` and `attic` folders from the DokuWiki data.
 
 ### Internal page links
@@ -178,12 +185,6 @@ Run with mapping to confirm the links are fixed:
 ```
 python3 importer.py ... --mapping mymap.csv
 ```
-
-#### Link mentions
-
-Importing internal links as mentions is not natively support in Outline.
-
-To support importing mentions you must run custom code branch for the import. Once it is imported you can switch back to production branch.
 
 ## Acknowledgements
 
