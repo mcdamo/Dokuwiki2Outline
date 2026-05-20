@@ -18,7 +18,7 @@ class Converter:
         parser.add_argument('-c', '--codefile', dest='codefile', action='store_true',
                             help='Add render the `filename` option from Dokuwiki code blocks. (Default is to remove)')
         parser.add_argument('--outline', dest='outline', action='store_true',
-                            help='Skip additional tweaks for Outline Wiki (internal links, page titles, etc)')
+                            help='Additional tweaks for Outline Wiki (internal links, page titles, etc)')
         parser.add_argument('-r', '--revisions', dest='revisions', action='store_true',
                             help='Convert revisions from attic')
         parser.add_argument('--promote', dest='promote', action='store_true',

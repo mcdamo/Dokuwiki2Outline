@@ -65,6 +65,7 @@ class Dokuwiki2Markdown:
 
         if self.outline:
             text = self._tr_outline_pagetitle(text, filename)
+            text = self._tr_kbd(text)
 
         if not self.timestamps:
             text = self._rm_timestamp(text)
@@ -160,6 +161,9 @@ class Dokuwiki2Markdown:
     def _tr_italic(self, text: str) -> str:
         return re.sub(r'//(.*?)//', r'*\1*', text)
 
+    def _tr_kbd(self, text: str) -> str:
+        return re.sub(r'<kbd>(.*?)</kbd>', self._escape_inline_code, text)
+
     def _tr_underline(self, text: str) -> str:
         # Underline (not supported in Markdown, converted to bold)
         return re.sub(r'__(.*?)__', r'**\1**', text)
@@ -173,8 +177,15 @@ class Dokuwiki2Markdown:
 
         return re.sub(r'(\'\'.*?\'\')', replace_block, text)
 
+    def _escape_inline_code(self, match):
+        text = match.group(1)
+        if '`' in text:
+            # use double-backticks
+            return f'`` {text} ``'
+        return f'`{text}`'
+
     def _tr_monospaced(self, text: str) -> str:
-        return re.sub(r'\'\'(.*?)\'\'', r'`\1`', text)
+        return re.sub(r'\'\'(.*?)\'\'', self._escape_inline_code, text)
 
     def _extract_strikethrough(self, text: str) -> str:
         def replace_block(match):
@@ -428,7 +439,7 @@ class Dokuwiki2Markdown:
         text = re.sub(r'(?P<listitem>  +[*-] +)(?P<del><del>)?(?P<pre>[^\n<]*)(?P<block><(?:code|file)[^>]*>.*?<\/(?:code|file)>)(?P<del2>(?P<postdel>[^<]*)<\/del>)?(?P<post>[^\n]*)', replace_block, text, flags=re.DOTALL)
 
         # match deleted blocks
-        text = re.sub(r'(?P<del><del>)(?P<pre>.*?)(?P<block><(?:code|file)[^>]*>.*?<\/(?:code|file)>)\s*(?P<del2>(?P<postdel>.*?)<\/del>)', replace_block, text, flags=re.DOTALL)
+        text = re.sub(r'(?P<del><del>)(?P<pre>(?!.*<del>).*)(?P<block><(?:code|file)[^>]*>.*?<\/(?:code|file)>)\s*(?P<del2>(?P<postdel>.*?)<\/del>)', replace_block, text, flags=re.DOTALL)
 
         # match all other blocks, unless wrapped in nowiki %% tags
         text = re.sub(r'(?<!......%%|<nowiki>)(?P<block><(?:code|file)[^>]*>.*?<\/(?:code|file)>)(?!%%|<\/nowiki>)', replace_block, text, flags=re.DOTALL)

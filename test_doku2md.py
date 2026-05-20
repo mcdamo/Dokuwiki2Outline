@@ -37,6 +37,7 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         self.assertEqual('\'not monospaced text\'', self.dtm._tr_monospaced("'not monospaced text'"))
         self.assertEqual('\n `monospaced text`', self.dtm._tr_monospaced("\n ''monospaced text''"))
         self.assertEqual('`monospaced text` \n', self.dtm._tr_monospaced("''monospaced text'' \n"))
+        self.assertEqual('`` escape` `` \n', self.dtm._tr_monospaced("''escape`'' \n"))
 
     def test_strikethrough(self):
         self.assertEqual('~~strikethrough text~~', self.dtm._tr_strikethrough('<del>strikethrough text</del>'))
@@ -314,6 +315,7 @@ Non-list text
         self.assertEqual(f'~~preceeding text~~ ~~`strikethrough`~~\n~~`block`~~ ~~trailing text~~',
             self.dtm.convert('<del>preceeding text\n<code>\nstrikethrough\nblock</code>\ntrailing text</del>'))
         self.assertEqual(f'~~preceeding text~~\n~~code~~\n~~block~~\n', self.dtm.convert('<del>preceeding text\n  code\n  block\n</del>'))
+        self.assertEqual(f'~~preceeding text inline-code~~\nnewline\n```\nother code\n```\n~~other deleted~~', self.dtm.convert('<del>preceeding text ''inline-code''</del>\nnewline\n<code>other code</code>\n<del>other deleted</del>'))
 
     def test_strikethrough_links(self):
         self.assertEqual(f'~~[title](https://example.com)~~', self.dtm.convert('<del>[[https://example.com|title]]</del>'))

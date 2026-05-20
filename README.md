@@ -98,7 +98,7 @@ options:
   -l, --lang LANG       Codeblocks will be labeled with this Language (eg. shell).
   -T, --timestamps      Keep textual timestamps in documents. (Default is to remove timestamps)
   -c, --codefile        Add render the `filename` option from Dokuwiki code blocks. (Default is to remove)
-  --outline             Skip additional tweaks for Outline Wiki (internal links, page titles, etc)
+  --outline             Additional tweaks for Outline Wiki (internal links, page titles, etc)
   -r, --revisions       Convert revisions from attic
   --promote             Promote headings, remove H1 and promote all others up one level
   --dry-run             Try converting all documents without saving
