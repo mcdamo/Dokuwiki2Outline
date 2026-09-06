@@ -41,8 +41,8 @@ class Dokuwiki2Markdown:
 
         # the order of these matter:
         transforms = [
-            self._extract_indentblocks,
             self._extract_codeblocks,
+            self._extract_indentblocks,
             self._extract_monospaced,
             self._extract_strikethrough,
             self._extract_links,
@@ -70,11 +70,11 @@ class Dokuwiki2Markdown:
         if not self.timestamps:
             text = self._rm_timestamp(text)
 
+        text = self._restore_links(text)
         text = self._restore_strikethrough(text)
+        text = self._restore_monospaced(text)
         text = self._restore_indentblocks(text)
         text = self._restore_codeblocks(text)
-        text = self._restore_monospaced(text)
-        text = self._restore_links(text)
 
         return text
     
@@ -375,8 +375,8 @@ class Dokuwiki2Markdown:
         in_code = False
         output_markdown = []  # List to store the converted Markdown lines
         code_lines = []
-
         in_del = False
+
         for line in lines:
             if in_code:
                 if f'</{in_code}>' in line:
@@ -391,10 +391,10 @@ class Dokuwiki2Markdown:
                 if in_indent:  # Exiting indent
                     in_indent = False
                     code_block = '```\n' + '\n'.join(code_lines) + '\n```\n' if not in_del else '~~\n~~'.join(code_lines)
-                    code_lines = []
                     unique_id = self._store_indentblock(code_block, params={ 'delete_wrapper': in_del})
                     output_markdown.append(f'{unique_id}')
-                elif match := re.match(r'<(code|file)[^>]*>', line):
+                    code_lines = []
+                elif match := re.match(r'<(code|file)(\s+[^>]*)?>', line):
                     in_code = match.group(1)
                 output_markdown.append(line)
 
@@ -404,6 +404,10 @@ class Dokuwiki2Markdown:
                 in_del = True
             elif (a < b):
                 in_del = False
+        if in_indent:  # indent on final line of file
+            code_block = '```\n' + '\n'.join(code_lines) + '\n```\n' if not in_del else '~~\n~~'.join(code_lines)
+            unique_id = self._store_indentblock(code_block, params={ 'delete_wrapper': in_del})
+            output_markdown.append(f'{unique_id}')
         text = '\n'.join(output_markdown)
         return text
 
@@ -429,20 +433,21 @@ class Dokuwiki2Markdown:
                 postdel = f'<del>{postdel}</del>'
             post_indent = ''
             if post != '':
-                post_indent = '\n' + indent
+                # workaround: don't indent the post text otherwise it will be treated as indented code
+                post_indent = '\n' # + indent
 
             return f'{listitem}{pre}{unique_id}{postdel}{post_indent}{post}'
 
         ## these regex substitutions are segmented this way for performance reasons
 
         # match listitems
-        text = re.sub(r'(?P<listitem>  +[*-] +)(?P<del><del>)?(?P<pre>[^\n<]*)(?P<block><(?:code|file)[^>]*>.*?<\/(?:code|file)>)(?P<del2>(?P<postdel>[^<]*)<\/del>)?(?P<post>[^\n]*)', replace_block, text, flags=re.DOTALL)
+        text = re.sub(r'(?P<listitem>  +[*-] +)(?P<del><del>)?(?P<pre>[^\n<]*)(?P<block><(?:code|file)(\s+[^>]*)?>.*?<\/(?:code|file)>)(?P<del2>(?P<postdel>[^<]*)<\/del>)?(?P<post>[^\n]*)', replace_block, text, flags=re.DOTALL)
 
         # match deleted blocks
-        text = re.sub(r'(?P<del><del>)(?P<pre>(?!.*<del>).*)(?P<block><(?:code|file)[^>]*>.*?<\/(?:code|file)>)\s*(?P<del2>(?P<postdel>.*?)<\/del>)', replace_block, text, flags=re.DOTALL)
+        text = re.sub(r'(?P<del><del>)(?P<pre>(?!.*<del>).*)(?P<block><(?:code|file)(\s+[^>]*)?>.*?<\/(?:code|file)>)\s*(?P<del2>(?P<postdel>.*?)<\/del>)', replace_block, text, flags=re.DOTALL)
 
         # match all other blocks, unless wrapped in nowiki %% tags
-        text = re.sub(r'(?<!......%%|<nowiki>)(?P<block><(?:code|file)[^>]*>.*?<\/(?:code|file)>)(?!%%|<\/nowiki>)', replace_block, text, flags=re.DOTALL)
+        text = re.sub(r'(?<!......%%|<nowiki>)(?P<block><(?:code|file)(\s+[^>]*)?>.*?<\/(?:code|file)>)(?!%%|<\/nowiki>)', replace_block, text, flags=re.DOTALL)
 
         return text
 

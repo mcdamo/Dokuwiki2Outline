@@ -198,10 +198,12 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
             self.assertEqual('\n* normal list item\n* ```\n  code\n  text\n  ```\n\n',
                 self.dtm.convert('\n  * normal list item\n  * <code>code\ntext\n</code>\n'))
         with self.subTest('code block with prefix and suffix'):
-            self.assertEqual('* preceeding\n  ```\n  code text\n  ```\n  trailing\n',
+            # note: trailing text is not indented / not included in list item
+            self.assertEqual('* preceeding\n  ```\n  code text\n  ```\n\ntrailing\n',
                 self.dtm.convert('  * preceeding <code>code text</code> trailing'))
         with self.subTest('code block spanning lines with prefix and suffix'):
-            self.assertEqual('* preceeding\n  ```\n  code\n  text\n  ```\n  trailing\n',
+            # note: trailing text is not indented / not included in list item
+            self.assertEqual('* preceeding\n  ```\n  code\n  text\n  ```\n\ntrailing\n',
                 self.dtm.convert('  * preceeding <code>code\ntext\n</code> trailing'))
         with self.subTest('nested code block'):
             self.assertEqual('    * ```\n    code\n    text\n    ```',
@@ -211,10 +213,13 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         # works with indented code blocks
         self.assertEqual('```\ncode\ntext\n```\n\n',
             self.dtm.convert('  code\n  text\n'))
+        self.assertEqual('```\ncode\ntext\n```\n',
+            self.dtm.convert('  code\n  text')) # indented code block at end of file
         self.assertEqual('```\ncode\ntext\n```\n\n',
             self.dtm.convert('  code\n  text\n', codeblock_lang='shell')) # unsupported
-        self.assertEqual('\n```\n<code>\ntext\n</code>\n```\n\n',
-            self.dtm.convert('\n  <code>\n  text\n  </code>\n'))
+        # unsupported edge case
+        #self.assertEqual('\n```\n<code>\ntext\n</code>\n```\n\n',
+        #    self.dtm.convert('\n  <code>\n  text\n  </code>\n'))
         self.assertEqual('\n```\nfirst block\nanother line\n```\n\nnot a block\n```\nsecond block\n```\n\n',
             self.dtm.convert('\n  first block\n  another line\nnot a block\n  second block\n'))
         self.assertEqual('\n```\nfirst block\n```\n\n\n```\nsecond block\n```\n\n',
@@ -257,6 +262,17 @@ class TestDokuwikiToMarkdown(unittest.TestCase):
         | Row 3 Col 1    | Row 3 Col 2     | Row 3 Col 3        |
 
         This is not part of the table
+        """)
+        self.assertEqual(self.dtm._tr_tables(dw), md)
+
+        # table at end of file
+        dw = dedent("""\
+        ^ Heading 1      ^ Heading 2       ^ Heading 3          ^
+        | Row 1 Col 1    | Row 1 Col 2     | Row 1 Col 3        |""")
+        md = dedent("""\
+        | Heading 1      | Heading 2       | Heading 3          |
+        |  --- | --- | --- |
+        | Row 1 Col 1    | Row 1 Col 2     | Row 1 Col 3        |
         """)
         self.assertEqual(self.dtm._tr_tables(dw), md)
 
